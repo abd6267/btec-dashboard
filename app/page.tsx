@@ -3,10 +3,11 @@ import { useState } from "react";
 
 const COLORS = {
   navy: "#0B1F3A", navyMid: "#122848", navyLight: "#1A3A5C",
-  gold: "#C9A84C", goldLight: "#E8C96A", cream: "#F7F4EE",
-  white: "#FFFFFF", slate: "#64748B", slateLight: "#94A3B8",
-  green: "#16A34A", greenLight: "#DCFCE7", red: "#DC2626",
-  redLight: "#FEE2E2", orange: "#D97706", orangeLight: "#FEF3C7",
+  gold: "#C9A84C", cream: "#F7F4EE", white: "#FFFFFF",
+  slate: "#64748B", slateLight: "#94A3B8",
+  green: "#16A34A", greenLight: "#DCFCE7",
+  red: "#DC2626", redLight: "#FEE2E2",
+  orange: "#D97706", orangeLight: "#FEF3C7",
   blue: "#2563EB", blueLight: "#DBEAFE",
 };
 
@@ -41,10 +42,9 @@ const STATS = [
 const TRANSACTIONS = [
   { date: "23 Jun", libelle: "Facture BENIN TECH #024", type: "vente", montant: 1250000, statut: "payé" },
   { date: "22 Jun", libelle: "Achat matériel bureau", type: "achat", montant: -380000, statut: "payé" },
-  { date: "21 Jun", libelle: "Prestation ZINSOU Ind.", type: "vente", montant: 2100000, statut: "en attente" },
-  { date: "20 Jun", libelle: "Loyer local Mènontin", type: "depense", montant: -250000, statut: "payé" },
+  { date: "21 Jun", libelle: "Prestation ZINSOU", type: "vente", montant: 2100000, statut: "en attente" },
+  { date: "20 Jun", libelle: "Loyer Mènontin", type: "depense", montant: -250000, statut: "payé" },
   { date: "19 Jun", libelle: "Facture AKPLA #019", type: "vente", montant: 870000, statut: "payé" },
-  { date: "18 Jun", libelle: "Charges sociales Juin", type: "depense", montant: -540000, statut: "prévu" },
 ];
 
 const ECHEANCES = [
@@ -54,52 +54,105 @@ const ECHEANCES = [
   { label: "Bilan annuel", date: "31 Déc", statut: "normal" },
 ];
 
-function VentesPage() {
-  const ventes = [
-    { num: "F-2025-024", client: "BENIN TECH Services", date: "23 Jun", montant: 1250000, statut: "payé" },
-    { num: "F-2025-023", client: "INDUSTRIE ZINSOU", date: "21 Jun", montant: 2100000, statut: "en attente" },
-    { num: "F-2025-022", client: "SARL AKPLA Commerce", date: "19 Jun", montant: 870000, statut: "payé" },
-    { num: "F-2025-021", client: "BENIN TECH Services", date: "15 Jun", montant: 3200000, statut: "payé" },
-    { num: "F-2025-020", client: "SARL AKPLA Commerce", date: "10 Jun", montant: 640000, statut: "retard" },
-  ];
+function StatCard({ s }: { s: typeof STATS[0] }) {
+  return (
+    <div style={{ background: COLORS.white, borderRadius: 14, padding: "16px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)", borderTop: `3px solid ${s.up === true ? COLORS.green : s.up === false ? COLORS.red : COLORS.gold}`, minWidth: 0 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <span style={{ fontSize: 12, color: COLORS.slate, fontWeight: 500 }}>{s.label}</span>
+        <span style={{ fontSize: 16 }}>{s.icon}</span>
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: COLORS.navy, marginBottom: 2, wordBreak: "break-word" }}>{s.value}</div>
+      <div style={{ fontSize: 10, color: COLORS.slateLight, marginBottom: 6 }}>{s.unit}</div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: s.up === true ? COLORS.green : s.up === false ? COLORS.red : COLORS.gold }}>
+        {s.up !== null ? (s.up ? "▲" : "▼") : "●"} {s.trend}
+      </div>
+    </div>
+  );
+}
+
+function DashboardHome() {
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy }}>Gestion des Ventes</h2>
-        <button style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 700, cursor: "pointer" }}>+ Nouvelle facture</button>
+      {/* Stats grid - responsive via classe CSS (4 col desktop / 2 col tablette / 1 col petit mobile) */}
+      <div className="stats-grid" style={{ display: "grid", gap: 12, marginBottom: 20 }}>
+        {STATS.map((s, i) => <StatCard key={i} s={s} />)}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
-        {[{ label: "CA ce mois", val: "8 060 000 FCFA", color: COLORS.green }, { label: "En attente", val: "2 100 000 FCFA", color: COLORS.orange }, { label: "En retard", val: "640 000 FCFA", color: COLORS.red }].map((s, i) => (
-          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", borderLeft: `4px solid ${s.color}` }}>
-            <div style={{ color: COLORS.slate, fontSize: 13, marginBottom: 6 }}>{s.label}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: s.color }}>{s.val}</div>
+
+      {/* Transactions */}
+      <div style={{ background: COLORS.white, borderRadius: 14, boxShadow: "0 2px 10px rgba(0,0,0,0.06)", marginBottom: 16, overflow: "hidden" }}>
+        <div style={{ padding: "14px 16px", borderBottom: "1px solid #F1F5F9", display: "flex", justifyContent: "space-between" }}>
+          <span style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>Transactions récentes</span>
+          <span style={{ fontSize: 12, color: COLORS.gold, fontWeight: 600 }}>Voir tout →</span>
+        </div>
+        {TRANSACTIONS.map((t, i) => (
+          <div key={i} style={{ padding: "12px 16px", borderBottom: i < TRANSACTIONS.length - 1 ? "1px solid #F8FAFC" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.libelle}</div>
+              <div style={{ fontSize: 11, color: COLORS.slateLight, marginTop: 2 }}>{t.date} · <span style={{ color: t.type === "vente" ? COLORS.blue : t.type === "achat" ? COLORS.orange : COLORS.red }}>{t.type}</span></div>
+            </div>
+            <div style={{ textAlign: "right", marginLeft: 12, flexShrink: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: t.montant > 0 ? COLORS.green : COLORS.red }}>
+                {t.montant > 0 ? "+" : ""}{t.montant.toLocaleString("fr-FR")}
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 10, background: t.statut === "payé" ? COLORS.greenLight : t.statut === "en attente" ? COLORS.orangeLight : COLORS.cream, color: t.statut === "payé" ? COLORS.green : t.statut === "en attente" ? COLORS.orange : COLORS.slate }}>{t.statut}</span>
+            </div>
           </div>
         ))}
       </div>
-      <div style={{ background: COLORS.white, borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ background: COLORS.cream }}>
-              {["N° Facture", "Client", "Date", "Montant", "Statut"].map(h => (
-                <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, fontWeight: 700, color: COLORS.slate, textTransform: "uppercase" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {ventes.map((v, i) => (
-              <tr key={i} style={{ borderTop: "1px solid #F1F5F9" }}>
-                <td style={{ padding: "14px 16px", fontWeight: 600, color: COLORS.navy, fontSize: 14 }}>{v.num}</td>
-                <td style={{ padding: "14px 16px", fontSize: 14, color: COLORS.navy }}>{v.client}</td>
-                <td style={{ padding: "14px 16px", fontSize: 14, color: COLORS.slate }}>{v.date}</td>
-                <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 600, color: COLORS.navy }}>{v.montant.toLocaleString("fr-FR")} FCFA</td>
-                <td style={{ padding: "14px 16px" }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: v.statut === "payé" ? COLORS.greenLight : v.statut === "en attente" ? COLORS.orangeLight : COLORS.redLight, color: v.statut === "payé" ? COLORS.green : v.statut === "en attente" ? COLORS.orange : COLORS.red }}>{v.statut}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      {/* Échéances */}
+      <div style={{ background: COLORS.white, borderRadius: 14, boxShadow: "0 2px 10px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+        <div style={{ padding: "14px 16px", borderBottom: "1px solid #F1F5F9" }}>
+          <span style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>Échéances fiscales</span>
+        </div>
+        {ECHEANCES.map((e, i) => (
+          <div key={i} style={{ padding: "12px 16px", borderBottom: i < ECHEANCES.length - 1 ? "1px solid #F8FAFC" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{e.label}</div>
+              <div style={{ fontSize: 11, color: COLORS.slateLight }}>Limite : {e.date}</div>
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, background: e.statut === "urgent" ? COLORS.redLight : e.statut === "proche" ? COLORS.orangeLight : COLORS.greenLight, color: e.statut === "urgent" ? COLORS.red : e.statut === "proche" ? COLORS.orange : COLORS.green, flexShrink: 0 }}>{e.statut}</span>
+          </div>
+        ))}
       </div>
+    </div>
+  );
+}
+
+function VentesPage() {
+  const ventes = [
+    { num: "F-2025-024", client: "BENIN TECH", date: "23 Jun", montant: 1250000, statut: "payé" },
+    { num: "F-2025-023", client: "ZINSOU Ind.", date: "21 Jun", montant: 2100000, statut: "en attente" },
+    { num: "F-2025-022", client: "AKPLA", date: "19 Jun", montant: 870000, statut: "payé" },
+    { num: "F-2025-021", client: "BENIN TECH", date: "15 Jun", montant: 3200000, statut: "payé" },
+    { num: "F-2025-020", client: "AKPLA", date: "10 Jun", montant: 640000, statut: "retard" },
+  ];
+  return (
+    <div>
+      <div className="page-header" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Ventes</h2>
+        <button style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Nouvelle</button>
+      </div>
+      <div className="ventes-stats-grid" style={{ display: "grid", gap: 10, marginBottom: 16 }}>
+        {[{ label: "CA mois", val: "8 060 000", color: COLORS.green }, { label: "Attente", val: "2 100 000", color: COLORS.orange }, { label: "Retard", val: "640 000", color: COLORS.red }].map((s, i) => (
+          <div key={i} style={{ background: COLORS.white, borderRadius: 10, padding: 12, boxShadow: "0 2px 6px rgba(0,0,0,0.06)", borderLeft: `3px solid ${s.color}`, minWidth: 0 }}>
+            <div style={{ color: COLORS.slate, fontSize: 11, marginBottom: 4 }}>{s.label}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: s.color, wordBreak: "break-word" }}>{s.val}</div>
+          </div>
+        ))}
+      </div>
+      {ventes.map((v, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "12px 14px", marginBottom: 8, boxShadow: "0 2px 6px rgba(0,0,0,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{v.num}</div>
+            <div style={{ fontSize: 12, color: COLORS.slate }}>{v.client} · {v.date}</div>
+          </div>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{v.montant.toLocaleString("fr-FR")} F</div>
+            <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10, background: v.statut === "payé" ? COLORS.greenLight : v.statut === "en attente" ? COLORS.orangeLight : COLORS.redLight, color: v.statut === "payé" ? COLORS.green : v.statut === "en attente" ? COLORS.orange : COLORS.red }}>{v.statut}</span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -113,149 +166,60 @@ function ClientsPage() {
   ];
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy }}>Gestion des Clients</h2>
-        <button style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 700, cursor: "pointer" }}>+ Nouveau client</button>
+      <div className="page-header" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Clients</h2>
+        <button style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Nouveau</button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-        {clients.map((c, i) => (
-          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <div style={{ fontWeight: 700, color: COLORS.navy }}>{c.nom}</div>
-              <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: c.statut === "actif" ? COLORS.greenLight : COLORS.cream, color: c.statut === "actif" ? COLORS.green : COLORS.slate }}>{c.statut}</span>
-            </div>
-            <div style={{ color: COLORS.slate, fontSize: 13, marginBottom: 4 }}>{c.secteur} · {c.ville}</div>
-            {c.solde > 0 ? <div style={{ color: COLORS.orange, fontSize: 13, fontWeight: 600 }}>Solde dû : {c.solde.toLocaleString("fr-FR")} FCFA</div> : <div style={{ color: COLORS.green, fontSize: 13 }}>Aucun impayé</div>}
+      {clients.map((c, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 6, marginBottom: 6 }}>
+            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{c.nom}</div>
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: c.statut === "actif" ? COLORS.greenLight : COLORS.cream, color: c.statut === "actif" ? COLORS.green : COLORS.slate, flexShrink: 0 }}>{c.statut}</span>
           </div>
-        ))}
-      </div>
+          <div style={{ color: COLORS.slate, fontSize: 12, marginBottom: 4 }}>{c.secteur} · {c.ville}</div>
+          {c.solde > 0 ? <div style={{ color: COLORS.orange, fontSize: 12, fontWeight: 600 }}>Solde dû : {c.solde.toLocaleString("fr-FR")} FCFA</div> : <div style={{ color: COLORS.green, fontSize: 12 }}>✓ Aucun impayé</div>}
+        </div>
+      ))}
     </div>
   );
 }
 
 function RapportsPage() {
   const rapports = [
-    { titre: "Bilan comptable S1 2025", date: "30 Jun 2025", type: "Bilan", statut: "généré" },
-    { titre: "Compte de résultat Mai", date: "31 Mai 2025", type: "CdR", statut: "généré" },
-    { titre: "Tableau de flux de trésorerie", date: "30 Jun 2025", type: "Trésorerie", statut: "en cours" },
-    { titre: "Balance générale Juin", date: "25 Jun 2025", type: "Balance", statut: "généré" },
+    { titre: "Bilan S1 2025", date: "30 Jun 2025", type: "Bilan", statut: "généré" },
+    { titre: "Compte résultat Mai", date: "31 Mai 2025", type: "CdR", statut: "généré" },
+    { titre: "Flux trésorerie", date: "30 Jun 2025", type: "Trésorerie", statut: "en cours" },
+    { titre: "Balance Juin", date: "25 Jun 2025", type: "Balance", statut: "généré" },
   ];
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy }}>Rapports Financiers</h2>
-        <button style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 700, cursor: "pointer" }}>+ Générer rapport</button>
+      <div className="page-header" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Rapports</h2>
+        <button style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Générer</button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-        {rapports.map((r, i) => (
-          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-              <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 15 }}>{r.titre}</div>
-              <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: r.statut === "généré" ? COLORS.greenLight : COLORS.orangeLight, color: r.statut === "généré" ? COLORS.green : COLORS.orange, marginLeft: 8 }}>{r.statut}</span>
-            </div>
-            <div style={{ color: COLORS.slate, fontSize: 13, marginBottom: 12 }}>{r.type} · {r.date}</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ fontSize: 12, padding: "6px 12px", borderRadius: 6, border: `1px solid ${COLORS.navy}`, background: "transparent", color: COLORS.navy, cursor: "pointer", fontWeight: 600 }}>📥 Télécharger</button>
-              <button style={{ fontSize: 12, padding: "6px 12px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>👁 Aperçu</button>
-            </div>
+      {rapports.map((r, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 14, marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 6, marginBottom: 6 }}>
+            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{r.titre}</div>
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: r.statut === "généré" ? COLORS.greenLight : COLORS.orangeLight, color: r.statut === "généré" ? COLORS.green : COLORS.orange, flexShrink: 0 }}>{r.statut}</span>
           </div>
-        ))}
-      </div>
+          <div style={{ color: COLORS.slate, fontSize: 12, marginBottom: 10 }}>{r.type} · {r.date}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <button style={{ fontSize: 12, padding: "6px 12px", borderRadius: 6, border: `1px solid ${COLORS.navy}`, background: "transparent", color: COLORS.navy, cursor: "pointer", fontWeight: 600 }}>📥 Télécharger</button>
+            <button style={{ fontSize: 12, padding: "6px 12px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>👁 Aperçu</button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
 function PlaceholderPage({ label }: { label: string }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 400, color: COLORS.slate }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
-      <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.navy, marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 14 }}>Cette section sera disponible dans la prochaine version.</div>
-    </div>
-  );
-}
-
-function DashboardHome() {
-  return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
-        {STATS.map((s, i) => (
-          <div key={i} style={{ background: COLORS.white, borderRadius: 14, padding: "20px 18px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)", borderTop: `3px solid ${s.up === true ? COLORS.green : s.up === false ? COLORS.red : COLORS.gold}` }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontSize: 13, color: COLORS.slate, fontWeight: 500 }}>{s.label}</span>
-              <span style={{ fontSize: 18 }}>{s.icon}</span>
-            </div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: COLORS.navy, marginBottom: 4 }}>{s.value}</div>
-            <div style={{ fontSize: 11, color: COLORS.slateLight }}>{s.unit}</div>
-            <div style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: s.up === true ? COLORS.green : s.up === false ? COLORS.red : COLORS.gold }}>
-              {s.up !== null ? (s.up ? "▲" : "▼") : "●"} {s.trend}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
-        <div style={{ background: COLORS.white, borderRadius: 14, boxShadow: "0 2px 10px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-          <div style={{ padding: "18px 20px", borderBottom: "1px solid #F1F5F9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontWeight: 700, color: COLORS.navy, fontSize: 15 }}>Transactions récentes</span>
-            <span style={{ fontSize: 12, color: COLORS.gold, cursor: "pointer", fontWeight: 600 }}>Voir tout →</span>
-          </div>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "#FAFAFA" }}>
-                {["Date", "Libellé", "Type", "Montant", "Statut"].map(h => (
-                  <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: COLORS.slateLight, textTransform: "uppercase" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {TRANSACTIONS.map((t, i) => (
-                <tr key={i} style={{ borderTop: "1px solid #F8FAFC" }}>
-                  <td style={{ padding: "12px 16px", fontSize: 12, color: COLORS.slateLight }}>{t.date}</td>
-                  <td style={{ padding: "12px 16px", fontSize: 13, color: COLORS.navy, fontWeight: 500 }}>{t.libelle}</td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 12, fontWeight: 600, background: t.type === "vente" ? COLORS.blueLight : t.type === "achat" ? COLORS.orangeLight : COLORS.redLight, color: t.type === "vente" ? COLORS.blue : t.type === "achat" ? COLORS.orange : COLORS.red }}>{t.type}</span>
-                  </td>
-                  <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, color: t.montant > 0 ? COLORS.green : COLORS.red }}>
-                    {t.montant > 0 ? "+" : ""}{t.montant.toLocaleString("fr-FR")}
-                  </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 12, fontWeight: 600, background: t.statut === "payé" ? COLORS.greenLight : t.statut === "en attente" ? COLORS.orangeLight : COLORS.cream, color: t.statut === "payé" ? COLORS.green : t.statut === "en attente" ? COLORS.orange : COLORS.slate }}>{t.statut}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div style={{ background: COLORS.white, borderRadius: 14, boxShadow: "0 2px 10px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-          <div style={{ padding: "18px 20px", borderBottom: "1px solid #F1F5F9" }}>
-            <span style={{ fontWeight: 700, color: COLORS.navy, fontSize: 15 }}>Échéances fiscales</span>
-          </div>
-          <div style={{ padding: "12px 16px" }}>
-            {ECHEANCES.map((e, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: i < ECHEANCES.length - 1 ? "1px solid #F8FAFC" : "none" }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 2 }}>{e.label}</div>
-                  <div style={{ fontSize: 12, color: COLORS.slateLight }}>Limite : {e.date}</div>
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, background: e.statut === "urgent" ? COLORS.redLight : e.statut === "proche" ? COLORS.orangeLight : COLORS.greenLight, color: e.statut === "urgent" ? COLORS.red : e.statut === "proche" ? COLORS.orange : COLORS.green }}>{e.statut}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ margin: "0 16px 16px", background: COLORS.cream, borderRadius: 10, padding: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy, marginBottom: 12 }}>Répartition Revenus</div>
-            {[{ label: "Ventes", pct: 65, color: COLORS.navy }, { label: "Prestations", pct: 25, color: COLORS.gold }, { label: "Autres", pct: 10, color: COLORS.slate }].map((b, i) => (
-              <div key={i} style={{ marginBottom: 8 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: COLORS.slate, marginBottom: 3 }}>
-                  <span>{b.label}</span><span style={{ fontWeight: 600 }}>{b.pct}%</span>
-                </div>
-                <div style={{ height: 6, borderRadius: 3, background: "#E2E8F0" }}>
-                  <div style={{ height: 6, borderRadius: 3, background: b.color, width: `${b.pct}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, color: COLORS.slate, textAlign: "center", padding: "0 16px" }}>
+      <div style={{ fontSize: 40, marginBottom: 12 }}>🚧</div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 13 }}>Disponible prochainement.</div>
     </div>
   );
 }
@@ -263,7 +227,7 @@ function DashboardHome() {
 export default function Page() {
   const [activeNav, setActiveNav] = useState("dashboard");
   const [activeEntreprise, setActiveEntreprise] = useState(ENTREPRISES[0]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const renderPage = () => {
     switch (activeNav) {
@@ -279,70 +243,150 @@ export default function Page() {
 
   const currentPage = NAV_ITEMS.find(n => n.id === activeNav);
 
+  const handleNav = (id: string) => {
+    setActiveNav(id);
+    setMenuOpen(false);
+  };
+
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif", background: COLORS.cream, overflow: "hidden" }}>
-      <div style={{ width: sidebarOpen ? 240 : 60, minWidth: sidebarOpen ? 240 : 60, background: COLORS.navy, display: "flex", flexDirection: "column", transition: "width 0.25s ease", overflow: "hidden" }}>
-        <div style={{ padding: "20px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 34, height: 34, background: COLORS.gold, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, color: COLORS.navy, flexShrink: 0 }}>B</div>
-          {sidebarOpen && (
+    <>
+      {/* CSS global pour responsive */}
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { margin: 0; height: 100%; }
+
+        .sidebar-desktop { display: flex !important; }
+        .menu-mobile { display: none !important; }
+
+        /* Grilles responsive pilotées par classe (pas de gridTemplateColumns inline) */
+        .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        .ventes-stats-grid { grid-template-columns: repeat(3, 1fr); }
+
+        @media (max-width: 1024px) {
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 768px) {
+          .sidebar-desktop { display: none !important; }
+          .menu-mobile { display: flex !important; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .ventes-stats-grid { grid-template-columns: repeat(1, 1fr) !important; }
+        }
+        @media (max-width: 380px) {
+          .stats-grid { grid-template-columns: repeat(1, 1fr) !important; }
+          .page-header { flex-direction: column !important; align-items: flex-start !important; }
+          .page-header button { width: 100% !important; }
+        }
+      `}</style>
+
+      <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif", background: COLORS.cream, overflow: "hidden" }}>
+
+        {/* SIDEBAR DESKTOP */}
+        <div className="sidebar-desktop" style={{ width: 220, minWidth: 220, background: COLORS.navy, flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ padding: "18px 14px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 32, height: 32, background: COLORS.gold, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, color: COLORS.navy, flexShrink: 0 }}>B</div>
             <div>
-              <div style={{ color: COLORS.white, fontWeight: 800, fontSize: 14 }}>BTEC Bénin</div>
-              <div style={{ color: COLORS.gold, fontSize: 10, letterSpacing: "0.08em" }}>CABINET COMPTABLE</div>
+              <div style={{ color: COLORS.white, fontWeight: 800, fontSize: 13 }}>BTEC Bénin</div>
+              <div style={{ color: COLORS.gold, fontSize: 9, letterSpacing: "0.08em" }}>CABINET COMPTABLE</div>
             </div>
-          )}
-          <div style={{ marginLeft: "auto", cursor: "pointer", color: COLORS.slateLight, fontSize: 16, flexShrink: 0 }} onClick={() => setSidebarOpen(!sidebarOpen)}>
-            {sidebarOpen ? "◀" : "▶"}
+          </div>
+          <div style={{ padding: "10px 10px 6px" }}>
+            <div style={{ fontSize: 9, color: COLORS.slateLight, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4, paddingLeft: 4 }}>Entreprise</div>
+            {ENTREPRISES.map(e => (
+              <div key={e.id} onClick={() => setActiveEntreprise(e)} style={{ padding: "7px 8px", borderRadius: 6, cursor: "pointer", background: activeEntreprise.id === e.id ? COLORS.navyLight : "transparent", margin: "2px 0" }}>
+                <div style={{ color: COLORS.white, fontSize: 11, fontWeight: activeEntreprise.id === e.id ? 700 : 400 }}>{e.nom}</div>
+                <div style={{ color: COLORS.slateLight, fontSize: 10 }}>{e.secteur}</div>
+              </div>
+            ))}
+          </div>
+          <nav style={{ flex: 1, padding: "6px 8px", overflowY: "auto" }}>
+            {NAV_ITEMS.map(item => (
+              <div key={item.id} onClick={() => handleNav(item.id)}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 8px", borderRadius: 8, cursor: "pointer", marginBottom: 1, background: activeNav === item.id ? COLORS.navyLight : "transparent", borderLeft: activeNav === item.id ? `3px solid ${COLORS.gold}` : "3px solid transparent" }}>
+                <span style={{ fontSize: 14, width: 18, textAlign: "center" }}>{item.icon}</span>
+                <span style={{ fontSize: 12, color: activeNav === item.id ? COLORS.white : COLORS.slateLight, fontWeight: activeNav === item.id ? 600 : 400 }}>{item.label}</span>
+              </div>
+            ))}
+          </nav>
+          <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 28, height: 28, borderRadius: "50%", background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: COLORS.navy }}>M</div>
+            <div>
+              <div style={{ color: COLORS.white, fontSize: 12, fontWeight: 600 }}>Moumouni Nabil</div>
+              <div style={{ color: COLORS.slateLight, fontSize: 10 }}>Comptable principal</div>
+            </div>
           </div>
         </div>
-        {sidebarOpen && (
-          <div style={{ padding: "12px 12px 8px" }}>
-            <div style={{ fontSize: 10, color: COLORS.slateLight, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6, paddingLeft: 4 }}>Entreprise active</div>
-            <div style={{ background: COLORS.navyMid, borderRadius: 8, padding: "2px 0" }}>
-              {ENTREPRISES.map(e => (
-                <div key={e.id} onClick={() => setActiveEntreprise(e)} style={{ padding: "8px 10px", borderRadius: 6, cursor: "pointer", background: activeEntreprise.id === e.id ? COLORS.navyLight : "transparent", margin: "2px 4px" }}>
-                  <div style={{ color: COLORS.white, fontSize: 12, fontWeight: activeEntreprise.id === e.id ? 700 : 400 }}>{e.nom}</div>
-                  <div style={{ color: COLORS.slateLight, fontSize: 10 }}>{e.secteur}</div>
+
+        {/* MAIN */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+
+          {/* TOPBAR */}
+          <div style={{ background: COLORS.white, borderBottom: "1px solid #E2E8F0", padding: "0 16px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+              {/* Bouton hamburger mobile */}
+              <button className="menu-mobile" onClick={() => setMenuOpen(!menuOpen)}
+                style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: COLORS.navy, padding: 0, flexShrink: 0 }}>☰</button>
+              <div style={{ minWidth: 0, overflow: "hidden" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.navy, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{currentPage?.label}</div>
+                <div style={{ fontSize: 11, color: COLORS.slateLight, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{activeEntreprise.nom}</div>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              <div style={{ background: COLORS.cream, borderRadius: 8, padding: "6px 10px", fontSize: 13, cursor: "pointer" }}>
+                🔔<span style={{ background: COLORS.red, color: "white", borderRadius: "50%", width: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, marginLeft: 4 }}>3</span>
+              </div>
+              <div style={{ background: COLORS.gold, color: COLORS.navy, borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>⚙</div>
+            </div>
+          </div>
+
+          {/* MENU MOBILE DRAWER */}
+          {menuOpen && (
+            <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, display: "flex" }}>
+              <div style={{ width: "min(260px, 82vw)", background: COLORS.navy, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+                <div style={{ padding: "18px 14px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    <div style={{ width: 32, height: 32, background: COLORS.gold, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, color: COLORS.navy, flexShrink: 0 }}>B</div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ color: COLORS.white, fontWeight: 800, fontSize: 13 }}>BTEC Bénin</div>
+                      <div style={{ color: COLORS.gold, fontSize: 9 }}>CABINET COMPTABLE</div>
+                    </div>
+                  </div>
+                  <button onClick={() => setMenuOpen(false)} style={{ background: "none", border: "none", color: COLORS.slateLight, fontSize: 20, cursor: "pointer", flexShrink: 0 }}>✕</button>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-        <nav style={{ flex: 1, padding: "8px 8px", overflowY: "auto" }}>
-          {NAV_ITEMS.map(item => (
-            <div key={item.id} onClick={() => setActiveNav(item.id)}
-              style={{ display: "flex", alignItems: "center", gap: 10, padding: sidebarOpen ? "10px 10px" : "10px", borderRadius: 8, cursor: "pointer", marginBottom: 2, background: activeNav === item.id ? COLORS.navyLight : "transparent", borderLeft: activeNav === item.id ? `3px solid ${COLORS.gold}` : "3px solid transparent" }}>
-              <span style={{ fontSize: 15, flexShrink: 0, width: 20, textAlign: "center" }}>{item.icon}</span>
-              {sidebarOpen && <span style={{ fontSize: 13, color: activeNav === item.id ? COLORS.white : COLORS.slateLight, fontWeight: activeNav === item.id ? 600 : 400, whiteSpace: "nowrap" }}>{item.label}</span>}
-            </div>
-          ))}
-        </nav>
-        <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: COLORS.navy, flexShrink: 0 }}>M</div>
-          {sidebarOpen && (
-            <div>
-              <div style={{ color: COLORS.white, fontSize: 13, fontWeight: 600 }}>Moumouni Nabil</div>
-              <div style={{ color: COLORS.slateLight, fontSize: 11 }}>Comptable principal</div>
+                <div style={{ padding: "10px" }}>
+                  {ENTREPRISES.map(e => (
+                    <div key={e.id} onClick={() => setActiveEntreprise(e)} style={{ padding: "7px 8px", borderRadius: 6, cursor: "pointer", background: activeEntreprise.id === e.id ? COLORS.navyLight : "transparent", marginBottom: 2 }}>
+                      <div style={{ color: COLORS.white, fontSize: 12, fontWeight: activeEntreprise.id === e.id ? 700 : 400 }}>{e.nom}</div>
+                      <div style={{ color: COLORS.slateLight, fontSize: 10 }}>{e.secteur}</div>
+                    </div>
+                  ))}
+                </div>
+                <nav style={{ flex: 1, padding: "6px 8px" }}>
+                  {NAV_ITEMS.map(item => (
+                    <div key={item.id} onClick={() => handleNav(item.id)}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 10px", borderRadius: 8, cursor: "pointer", marginBottom: 2, background: activeNav === item.id ? COLORS.navyLight : "transparent", borderLeft: activeNav === item.id ? `3px solid ${COLORS.gold}` : "3px solid transparent" }}>
+                      <span style={{ fontSize: 16 }}>{item.icon}</span>
+                      <span style={{ fontSize: 13, color: activeNav === item.id ? COLORS.white : COLORS.slateLight, fontWeight: activeNav === item.id ? 600 : 400 }}>{item.label}</span>
+                    </div>
+                  ))}
+                </nav>
+                <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: COLORS.navy, flexShrink: 0 }}>M</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ color: COLORS.white, fontSize: 12, fontWeight: 600 }}>Moumouni Nabil</div>
+                    <div style={{ color: COLORS.slateLight, fontSize: 10 }}>Comptable principal</div>
+                  </div>
+                </div>
+              </div>
+              <div onClick={() => setMenuOpen(false)} style={{ flex: 1, background: "rgba(0,0,0,0.5)" }} />
             </div>
           )}
-        </div>
-      </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <div style={{ background: COLORS.white, borderBottom: "1px solid #E2E8F0", padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy }}>{currentPage?.label}</div>
-            <div style={{ fontSize: 12, color: COLORS.slateLight }}>{activeEntreprise.nom}</div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ background: COLORS.cream, borderRadius: 8, padding: "8px 14px", fontSize: 13, color: COLORS.slate, cursor: "pointer" }}>
-              🔔 <span style={{ background: COLORS.red, color: "white", borderRadius: "50%", width: 18, height: 18, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 }}>3</span>
-            </div>
-            <div style={{ background: COLORS.gold, color: COLORS.navy, borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>⚙ Paramètres</div>
+
+          {/* PAGE CONTENT */}
+          <div style={{ flex: 1, overflowY: "auto", padding: 16, minWidth: 0 }}>
+            {renderPage()}
           </div>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>
-          {renderPage()}
-        </div>
       </div>
-    </div>
+    </>
   );
 }
