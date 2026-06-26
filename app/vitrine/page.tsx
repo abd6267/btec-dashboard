@@ -80,7 +80,7 @@ export default function VitrinePage() {
             Nous gérons la comptabilité de nos entreprises clientes en toute simplicité
           </h1>
           <p style={{ fontSize: 16, color: COLORS.slateLight, marginBottom: 32, lineHeight: 1.7 }}>
-            BTEC Compta est la plateforme dédiée au Département de Comptabilité de notre Cabinet. Elle permet de centraliser, en un seulespace sécurisé,la Gestion Comptable de l'ensemble de notre portefeuille d'entreprises clientes.
+            BTEC Compta est la plateforme dédiée au Département de Comptabilité de notre Cabinet. Elle permet de centraliser, en un seul espace sécurisé,la Gestion Comptable de l'ensemble de notre portefeuille d'entreprises clientes.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <button onClick={() => router.push("/login")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 10, padding: "14px 28px", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>
