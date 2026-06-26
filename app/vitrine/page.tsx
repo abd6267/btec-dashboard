@@ -15,7 +15,6 @@ const COLORS = {
 export default function VitrinePage() {
   const router = useRouter();
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const fonctionnalites = [
     { icon: "📊", titre: "Gestion Comptable", desc: "Saisie des opérations, grand livre, balance, bilan et compte de résultat selon les normes SYSCOHADA." },
@@ -62,10 +61,10 @@ export default function VitrinePage() {
           <span style={{ color: COLORS.white, fontWeight: 800, fontSize: 16 }}>BTEC Bénin</span>
         </div>
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-          <a href="#fonctionnalites" style={{ color: COLORS.slateLight, fontSize: 13, textDecoration: "none", display: menuOpen ? "block" : undefined }}>Fonctionnalités</a>
-          <a href="#tarifs" style={{ color: COLORS.slateLight, fontSize: 13, textDecoration: "none" }}>Tarifs</a>
-          <a href="#contact" style={{ color: COLORS.slateLight, fontSize: 13, textDecoration: "none" }}>Contact</a>
-          <button onClick={() => router.push("/")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Connexion</button>
+          <span onClick={() => router.push("/fonctionnalites")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>Fonctionnalités</span>
+          <span onClick={() => router.push("/tarifs")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>Tarifs</span>
+          <span onClick={() => router.push("/contact")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>Contact</span>
+          <button onClick={() => router.push("/login")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Connexion</button>
         </div>
       </nav>
 
@@ -82,10 +81,10 @@ export default function VitrinePage() {
             BTEC Bénin est la plateforme SaaS qui permet aux cabinets comptables de gérer plusieurs entreprises clientes depuis un seul espace sécurisé.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => router.push("/")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 10, padding: "14px 28px", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>
+            <button onClick={() => router.push("/login")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 10, padding: "14px 28px", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>
               Commencer gratuitement →
             </button>
-            <button onClick={() => router.push("/")} style={{ background: "transparent", color: COLORS.white, border: "2px solid rgba(255,255,255,0.3)", borderRadius: 10, padding: "14px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
+            <button onClick={() => router.push("/login")} style={{ background: "transparent", color: COLORS.white, border: "2px solid rgba(255,255,255,0.3)", borderRadius: 10, padding: "14px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
               Voir la démo
             </button>
           </div>
@@ -168,7 +167,7 @@ export default function VitrinePage() {
                     <span style={{ color: COLORS.green }}>✓</span> {f}
                   </div>
                 ))}
-                <button onClick={() => router.push("/")} style={{ width: "100%", marginTop: 16, background: t.recommande ? COLORS.gold : COLORS.navy, color: t.recommande ? COLORS.navy : COLORS.white, border: "none", borderRadius: 10, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                <button onClick={() => router.push("/login")} style={{ width: "100%", marginTop: 16, background: t.recommande ? COLORS.gold : COLORS.navy, color: t.recommande ? COLORS.navy : COLORS.white, border: "none", borderRadius: 10, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                   Commencer →
                 </button>
               </div>
@@ -213,14 +212,6 @@ export default function VitrinePage() {
               </div>
             ))}
           </div>
-          <div style={{ background: COLORS.gray, borderRadius: 14, padding: 24 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <input placeholder="Votre nom" style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }} />
-              <input placeholder="Votre email" style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }} />
-              <textarea placeholder="Votre message..." rows={4} style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", resize: "none" }} />
-              <button style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 10, padding: "13px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Envoyer le message</button>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -236,9 +227,10 @@ export default function VitrinePage() {
           </div>
           <div>
             <div style={{ color: COLORS.white, fontWeight: 700, fontSize: 13, marginBottom: 12 }}>Liens rapides</div>
-            {["Fonctionnalités", "Tarifs", "Contact", "Connexion"].map((l, i) => (
-              <div key={i} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>{l}</div>
-            ))}
+            <div onClick={() => router.push("/fonctionnalites")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Fonctionnalités</div>
+            <div onClick={() => router.push("/tarifs")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Tarifs</div>
+            <div onClick={() => router.push("/contact")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Contact</div>
+            <div onClick={() => router.push("/login")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Connexion</div>
           </div>
           <div>
             <div style={{ color: COLORS.white, fontWeight: 700, fontSize: 13, marginBottom: 12 }}>Contact</div>
