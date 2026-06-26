@@ -4,8 +4,7 @@ import { useRouter } from "next/navigation";
 
 const COLORS = {
   navy: "#0B1F3A", navyLight: "#1A3A5C",
-  gold: "#C9A84C", goldLight: "#E8C96A",
-  cream: "#F7F4EE", white: "#FFFFFF",
+  gold: "#C9A84C", cream: "#F7F4EE", white: "#FFFFFF",
   slate: "#64748B", slateLight: "#94A3B8",
   green: "#16A34A", greenLight: "#DCFCE7",
   blue: "#2563EB", blueLight: "#DBEAFE",
@@ -15,21 +14,23 @@ const COLORS = {
 export default function VitrinePage() {
   const router = useRouter();
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [form, setForm] = useState({ nom: "", email: "", message: "" });
+  const [envoye, setEnvoye] = useState(false);
 
   const fonctionnalites = [
-    { icon: "📊", titre: "Gestion Comptable", desc: "Saisie des opérations, grand livre, balance, bilan et compte de résultat selon les normes SYSCOHADA." },
+    { icon: "📊", titre: "Gestion Comptable", desc: "Saisie des opérations, grand livre, balance, bilan selon SYSCOHADA." },
     { icon: "💰", titre: "Gestion Financière", desc: "Suivi de trésorerie, créances, dettes et flux financiers en temps réel." },
     { icon: "🛒", titre: "Gestion Commerciale", desc: "Facturation, gestion des ventes, achats, clients et fournisseurs." },
-    { icon: "📁", titre: "Gestion Documentaire", desc: "Archivage sécurisé, dépôt et téléchargement de documents comptables." },
+    { icon: "📁", titre: "Gestion Documentaire", desc: "Archivage sécurisé, dépôt et téléchargement de documents." },
     { icon: "💬", titre: "Collaboration", desc: "Messagerie intégrée entre le cabinet et ses entreprises clientes." },
     { icon: "🧾", titre: "Suivi Fiscal", desc: "Gestion TVA, déclarations fiscales et suivi des échéances DGI." },
   ];
 
   const avantages = [
-    { icon: "🔒", titre: "Sécurisé", desc: "Données chiffrées et accès sécurisé SSL" },
-    { icon: "📱", titre: "Responsive", desc: "Accessible sur mobile, tablette et desktop" },
-    { icon: "⚡", titre: "Temps réel", desc: "Données mises à jour en temps réel" },
-    { icon: "🌍", titre: "Multi-entreprises", desc: "Gérez plusieurs entreprises depuis un seul espace" },
+    { icon: "🔒", titre: "Sécurisé", desc: "Données chiffrées SSL" },
+    { icon: "📱", titre: "Responsive", desc: "Mobile, tablette, desktop" },
+    { icon: "⚡", titre: "Temps réel", desc: "Données en direct" },
+    { icon: "🌍", titre: "Multi-entreprises", desc: "Plusieurs entreprises" },
   ];
 
   const temoignages = [
@@ -39,16 +40,16 @@ export default function VitrinePage() {
   ];
 
   const tarifs = [
-    { nom: "Starter", prix: "15 000", desc: "Pour les petites entreprises", features: ["1 entreprise", "Comptabilité de base", "5 Go documents", "Support email"] },
-    { nom: "Business", prix: "35 000", desc: "Pour les PME", features: ["3 entreprises", "Toutes les fonctionnalités", "20 Go documents", "Messagerie incluse", "Support prioritaire"], recommande: true },
-    { nom: "Enterprise", prix: "75 000", desc: "Pour les grands cabinets", features: ["Illimité", "API disponible", "100 Go documents", "Manager dédié", "Formation incluse"] },
+    { nom: "Starter", prix: "15 000", desc: "Petites entreprises", features: ["1 entreprise", "Comptabilité de base", "5 Go documents", "Support email"], recommande: false },
+    { nom: "Business", prix: "35 000", desc: "PME et cabinets actifs", features: ["3 entreprises", "Toutes les fonctionnalités", "20 Go documents", "Messagerie incluse", "Support prioritaire"], recommande: true },
+    { nom: "Enterprise", prix: "75 000", desc: "Grands cabinets", features: ["Illimité", "API disponible", "100 Go documents", "Manager dédié", "Formation incluse"], recommande: false },
   ];
 
   const faqs = [
-    { q: "Comment accéder à la plateforme ?", r: "Après souscription, vous recevez vos identifiants par email pour accéder à votre espace sécurisé." },
-    { q: "Mes données sont-elles sécurisées ?", r: "Oui, toutes les données sont chiffrées avec SSL et hébergées sur des serveurs sécurisés." },
-    { q: "Puis-je gérer plusieurs entreprises ?", r: "Oui, selon votre abonnement vous pouvez gérer de 1 à un nombre illimité d'entreprises." },
-    { q: "Y a-t-il une période d'essai ?", r: "Oui, nous offrons 30 jours d'essai gratuit sans engagement." },
+    { q: "Comment accéder à la plateforme ?", r: "Après souscription, vous recevez vos identifiants par email." },
+    { q: "Mes données sont-elles sécurisées ?", r: "Oui, toutes les données sont chiffrées avec SSL." },
+    { q: "Puis-je gérer plusieurs entreprises ?", r: "Oui, selon votre abonnement de 1 à illimité." },
+    { q: "Y a-t-il une période d'essai ?", r: "Oui, 30 jours d'essai gratuit sans engagement." },
   ];
 
   return (
@@ -60,10 +61,11 @@ export default function VitrinePage() {
           <div style={{ width: 32, height: 32, background: COLORS.gold, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 16, color: COLORS.navy }}>B</div>
           <span style={{ color: COLORS.white, fontWeight: 800, fontSize: 16 }}>BTEC Bénin</span>
         </div>
-        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <span onClick={() => router.push("/fonctionnalites")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>Fonctionnalités</span>
           <span onClick={() => router.push("/tarifs")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>Tarifs</span>
           <span onClick={() => router.push("/contact")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>Contact</span>
+          <span onClick={() => router.push("/apropos")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>À Propos</span>
           <button onClick={() => router.push("/login")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Connexion</button>
         </div>
       </nav>
@@ -99,11 +101,50 @@ export default function VitrinePage() {
         </div>
       </section>
 
+      {/* PRÉSENTATION DE LA PLATEFORME */}
+      <section style={{ padding: "60px 24px", background: COLORS.white }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 8 }}>Notre Plateforme</h2>
+          <p style={{ textAlign: "center", color: COLORS.slate, marginBottom: 40, fontSize: 14 }}>Une solution complète pour les cabinets comptables modernes</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24, alignItems: "center" }}>
+            <div>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: COLORS.navy, marginBottom: 16 }}>Pourquoi BTEC Bénin ?</h3>
+              <p style={{ fontSize: 14, color: COLORS.slate, lineHeight: 1.8, marginBottom: 16 }}>
+                BTEC Bénin est une plateforme SaaS conçue spécialement pour les cabinets comptables et leurs entreprises clientes au Bénin et en Afrique de l'Ouest.
+              </p>
+              <p style={{ fontSize: 14, color: COLORS.slate, lineHeight: 1.8, marginBottom: 20 }}>
+                Grâce à notre système multi-entreprises, un cabinet peut gérer la comptabilité de plusieurs clients depuis un seul tableau de bord centralisé.
+              </p>
+              {["Accès sécurisé 24h/24 et 7j/7", "Interface intuitive et moderne", "Conformité aux normes SYSCOHADA", "Support technique dédié"].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                  <span style={{ color: COLORS.green, fontWeight: 700, fontSize: 16 }}>✓</span>
+                  <span style={{ fontSize: 14, color: COLORS.slate }}>{item}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {[
+                { icon: "🏢", val: "500+", label: "Entreprises" },
+                { icon: "👨‍💼", val: "50+", label: "Cabinets" },
+                { icon: "📊", val: "10k+", label: "Rapports" },
+                { icon: "⭐", val: "98%", label: "Satisfaction" },
+              ].map((s, i) => (
+                <div key={i} style={{ background: COLORS.gray, borderRadius: 12, padding: 20, textAlign: "center" }}>
+                  <div style={{ fontSize: 28, marginBottom: 8 }}>{s.icon}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: COLORS.navy }}>{s.val}</div>
+                  <div style={{ fontSize: 12, color: COLORS.slate }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FONCTIONNALITÉS */}
-      <section id="fonctionnalites" style={{ padding: "60px 24px", background: COLORS.gray }}>
+      <section style={{ padding: "60px 24px", background: COLORS.gray }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 8 }}>Fonctionnalités principales</h2>
-          <p style={{ textAlign: "center", color: COLORS.slate, marginBottom: 40, fontSize: 14 }}>Tout ce dont vous avez besoin pour gérer votre comptabilité</p>
+          <p style={{ textAlign: "center", color: COLORS.slate, marginBottom: 40, fontSize: 14 }}>Tout ce dont vous avez besoin en un seul endroit</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
             {fonctionnalites.map((f, i) => (
               <div key={i} style={{ background: COLORS.white, borderRadius: 14, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
@@ -112,6 +153,11 @@ export default function VitrinePage() {
                 <div style={{ fontSize: 13, color: COLORS.slate, lineHeight: 1.6 }}>{f.desc}</div>
               </div>
             ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 24 }}>
+            <button onClick={() => router.push("/fonctionnalites")} style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 10, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+              Voir toutes les fonctionnalités →
+            </button>
           </div>
         </div>
       </section>
@@ -122,7 +168,7 @@ export default function VitrinePage() {
           <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 40 }}>Pourquoi choisir BTEC ?</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
             {avantages.map((a, i) => (
-              <div key={i} style={{ textAlign: "center", padding: 20 }}>
+              <div key={i} style={{ textAlign: "center", padding: 20, background: COLORS.gray, borderRadius: 14 }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>{a.icon}</div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.navy, marginBottom: 6 }}>{a.titre}</div>
                 <div style={{ fontSize: 13, color: COLORS.slate }}>{a.desc}</div>
@@ -150,18 +196,17 @@ export default function VitrinePage() {
       </section>
 
       {/* TARIFS */}
-      <section id="tarifs" style={{ padding: "60px 24px", background: COLORS.white }}>
+      <section style={{ padding: "60px 24px", background: COLORS.white }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 8 }}>Nos tarifs</h2>
           <p style={{ textAlign: "center", color: COLORS.slate, marginBottom: 40, fontSize: 14 }}>30 jours d'essai gratuit · Sans engagement</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
             {tarifs.map((t, i) => (
               <div key={i} style={{ background: t.recommande ? COLORS.navy : COLORS.white, borderRadius: 16, padding: 24, boxShadow: t.recommande ? "0 8px 24px rgba(11,31,58,0.3)" : "0 2px 8px rgba(0,0,0,0.06)", border: t.recommande ? "none" : "1px solid #E2E8F0", position: "relative" }}>
-                {t.recommande && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: COLORS.gold, color: COLORS.navy, fontSize: 11, fontWeight: 800, padding: "4px 12px", borderRadius: 20 }}>⭐ RECOMMANDÉ</div>}
+                {t.recommande && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: COLORS.gold, color: COLORS.navy, fontSize: 11, fontWeight: 800, padding: "4px 12px", borderRadius: 20, whiteSpace: "nowrap" }}>⭐ RECOMMANDÉ</div>}
                 <div style={{ fontSize: 16, fontWeight: 800, color: t.recommande ? COLORS.white : COLORS.navy, marginBottom: 4 }}>{t.nom}</div>
                 <div style={{ fontSize: 12, color: t.recommande ? COLORS.slateLight : COLORS.slate, marginBottom: 16 }}>{t.desc}</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: t.recommande ? COLORS.gold : COLORS.navy, marginBottom: 4 }}>{t.prix} <span style={{ fontSize: 13, fontWeight: 400 }}>FCFA/mois</span></div>
-                <div style={{ margin: "16px 0", borderTop: `1px solid ${t.recommande ? "rgba(255,255,255,0.1)" : "#F1F5F9"}` }} />
+                <div style={{ fontSize: 28, fontWeight: 900, color: t.recommande ? COLORS.gold : COLORS.navy, marginBottom: 16 }}>{t.prix} <span style={{ fontSize: 13, fontWeight: 400 }}>FCFA/mois</span></div>
                 {t.features.map((f, j) => (
                   <div key={j} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 13, color: t.recommande ? COLORS.slateLight : COLORS.slate }}>
                     <span style={{ color: COLORS.green }}>✓</span> {f}
@@ -186,32 +231,51 @@ export default function VitrinePage() {
                 <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy }}>{f.q}</span>
                 <span style={{ color: COLORS.gold, fontSize: 18 }}>{faqOpen === i ? "−" : "+"}</span>
               </div>
-              {faqOpen === i && (
-                <div style={{ padding: "0 20px 16px", fontSize: 13, color: COLORS.slate, lineHeight: 1.7 }}>{f.r}</div>
-              )}
+              {faqOpen === i && <div style={{ padding: "0 20px 16px", fontSize: 13, color: COLORS.slate, lineHeight: 1.7 }}>{f.r}</div>}
             </div>
           ))}
         </div>
       </section>
 
-      {/* CONTACT */}
-      <section id="contact" style={{ padding: "60px 24px", background: COLORS.white }}>
+      {/* FORMULAIRE DE CONTACT */}
+      <section style={{ padding: "60px 24px", background: COLORS.white }}>
         <div style={{ maxWidth: 700, margin: "0 auto" }}>
           <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 8 }}>Contactez-nous</h2>
           <p style={{ textAlign: "center", color: COLORS.slate, marginBottom: 40, fontSize: 14 }}>Notre équipe vous répond dans les 24h</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 32 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 32 }}>
             {[
               { icon: "📧", label: "Email", val: "contact@btecbenin.com" },
               { icon: "📞", label: "WhatsApp", val: "+229 01 48 55 26 07" },
-              { icon: "📍", label: "Adresse", val: "Mènontin, Cotonou, Bénin" },
+              { icon: "📍", label: "Adresse", val: "Mènontin, Cotonou" },
             ].map((c, i) => (
-              <div key={i} style={{ textAlign: "center", background: COLORS.gray, borderRadius: 12, padding: 20 }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>{c.icon}</div>
-                <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>{c.label}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{c.val}</div>
+              <div key={i} style={{ textAlign: "center", background: COLORS.gray, borderRadius: 12, padding: 16 }}>
+                <div style={{ fontSize: 24, marginBottom: 6 }}>{c.icon}</div>
+                <div style={{ fontSize: 11, color: COLORS.slate, marginBottom: 4 }}>{c.label}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy }}>{c.val}</div>
               </div>
             ))}
           </div>
+          {envoye ? (
+            <div style={{ textAlign: "center", padding: "40px 0", background: COLORS.gray, borderRadius: 14 }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy }}>Message envoyé !</div>
+              <div style={{ fontSize: 13, color: COLORS.slate, marginTop: 8 }}>Nous vous répondrons dans les 24 heures.</div>
+            </div>
+          ) : (
+            <div style={{ background: COLORS.gray, borderRadius: 14, padding: 24 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <input value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} placeholder="Votre nom" style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }} />
+                <input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="Votre email" style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }} />
+                <textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder="Votre message..." rows={4} style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", resize: "none" }} />
+                <button onClick={() => { if (form.nom && form.email && form.message) setEnvoye(true); }} style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 10, padding: "13px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                  Envoyer le message
+                </button>
+                <a href="https://wa.me/22901485526" style={{ display: "block", textAlign: "center", background: "#25D366", color: COLORS.white, borderRadius: 10, padding: "13px", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                  💬 Contacter via WhatsApp
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -223,13 +287,14 @@ export default function VitrinePage() {
               <div style={{ width: 32, height: 32, background: COLORS.gold, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 16, color: COLORS.navy }}>B</div>
               <span style={{ color: COLORS.white, fontWeight: 800, fontSize: 16 }}>BTEC Bénin</span>
             </div>
-            <p style={{ fontSize: 12, color: COLORS.slateLight, maxWidth: 220, lineHeight: 1.7 }}>Plateforme SaaS de gestion comptable et financière pour les cabinets et entreprises du Bénin.</p>
+            <p style={{ fontSize: 12, color: COLORS.slateLight, maxWidth: 220, lineHeight: 1.7 }}>Plateforme SaaS de gestion comptable et financière pour les cabinets du Bénin.</p>
           </div>
           <div>
             <div style={{ color: COLORS.white, fontWeight: 700, fontSize: 13, marginBottom: 12 }}>Liens rapides</div>
             <div onClick={() => router.push("/fonctionnalites")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Fonctionnalités</div>
             <div onClick={() => router.push("/tarifs")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Tarifs</div>
             <div onClick={() => router.push("/contact")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Contact</div>
+            <div onClick={() => router.push("/apropos")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>À Propos</div>
             <div onClick={() => router.push("/login")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Connexion</div>
           </div>
           <div>
