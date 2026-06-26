@@ -77,10 +77,10 @@ export default function VitrinePage() {
             🚀 Plateforme SaaS Comptable & Financière
           </div>
           <h1 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 900, color: COLORS.white, lineHeight: 1.2, marginBottom: 20 }}>
-            Gérez la comptabilité de nos entreprises en toute simplicité
+            Nous gérons la comptabilité de nos entreprises clientes en toute simplicité
           </h1>
           <p style={{ fontSize: 16, color: COLORS.slateLight, marginBottom: 32, lineHeight: 1.7 }}>
-            BTEC Bénin est la plateforme SaaS qui permet aux cabinets comptables de gérer plusieurs entreprises clientes depuis un seul espace sécurisé.
+            BTEC Compta est la plateforme dédiée au Département de Comptabilité de notre Cabinet. Elle permet de centraliser, en un seulespace sécurisé,la Gestion Comptable de l'ensemble de notre portefeuille d'entreprises clientes.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <button onClick={() => router.push("/login")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 10, padding: "14px 28px", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>
