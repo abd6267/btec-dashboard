@@ -26,7 +26,6 @@ const ENTREPRISES_DATA = [
   { id: 1, nom: "SARL AKPLA Commerce", secteur: "Commerce", statut: "actif", users: 3, abonnement: "Business" },
   { id: 2, nom: "BENIN TECH Services", secteur: "Services", statut: "actif", users: 2, abonnement: "Starter" },
   { id: 3, nom: "INDUSTRIE ZINSOU", secteur: "Industrie", statut: "actif", users: 4, abonnement: "Enterprise" },
-  { id: 4, nom: "GIE ALAFIA", secteur: "Agriculture", statut: "suspendu", users: 1, abonnement: "Starter" },
 ];
 
 const COMPTABLES_DATA = [
@@ -39,21 +38,18 @@ const UTILISATEURS_DATA = [
   { id: 1, nom: "Kofi Mensah", email: "kofi@akpla.bj", entreprise: "SARL AKPLA", role: "Admin", statut: "actif" },
   { id: 2, nom: "Aminata Diallo", email: "aminata@benintech.bj", entreprise: "BENIN TECH", role: "Lecteur", statut: "actif" },
   { id: 3, nom: "Jean Zinsou", email: "jean@zinsou.bj", entreprise: "INDUSTRIE ZINSOU", role: "Admin", statut: "actif" },
-  { id: 4, nom: "Marie Alafia", email: "marie@alafia.bj", entreprise: "GIE ALAFIA", role: "Lecteur", statut: "suspendu" },
 ];
 
 const ABONNEMENTS = [
   { entreprise: "SARL AKPLA Commerce", plan: "Business", prix: "35 000", statut: "actif", renouvellement: "01 Jul 2025" },
   { entreprise: "BENIN TECH Services", plan: "Starter", prix: "15 000", statut: "actif", renouvellement: "15 Jul 2025" },
   { entreprise: "INDUSTRIE ZINSOU", plan: "Enterprise", prix: "75 000", statut: "actif", renouvellement: "30 Jun 2025" },
-  { entreprise: "GIE ALAFIA", plan: "Starter", prix: "15 000", statut: "suspendu", renouvellement: "01 Jun 2025" },
 ];
 
 const PAIEMENTS = [
   { entreprise: "INDUSTRIE ZINSOU", montant: "75 000", date: "01 Jun 2025", statut: "payé" },
   { entreprise: "SARL AKPLA Commerce", montant: "35 000", date: "01 Jun 2025", statut: "payé" },
   { entreprise: "BENIN TECH Services", montant: "15 000", date: "15 Mai 2025", statut: "payé" },
-  { entreprise: "GIE ALAFIA", montant: "15 000", date: "01 Mai 2025", statut: "impayé" },
 ];
 
 // MODAL COMPONENT
