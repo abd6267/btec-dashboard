@@ -71,7 +71,7 @@ export default function VitrinePage() {
       </nav>
 
       {/* HERO */}
-      <section style={{ background: `linear-gradient(135deg, ${COLORS.navy} 0%, ${COLORS.navyLight} 100%)`, padding: "80px 24px", textAlign: "center" }}>
+      <section style={{ background: `linear-gradient(135deg, ${COLORS.navy} 0%, ${COLORS.navy} 100%)`, padding: "80px 24px", textAlign: "center" }}>
         <div style={{ maxWidth: 700, margin: "0 auto" }}>
           <div style={{ display: "inline-block", background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 20, padding: "6px 16px", fontSize: 12, color: COLORS.gold, marginBottom: 20, fontWeight: 600 }}>
             🚀 Plateforme SaaS Comptable & Financière
