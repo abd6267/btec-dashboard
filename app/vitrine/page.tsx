@@ -130,7 +130,7 @@ export default function VitrinePage() {
           </h1>
 
           <p style={{ fontSize: 16, color: C.slate, marginBottom: 36, lineHeight: 1.75, maxWidth: 600, margin: "0 auto 36px" }}>
-            BTEC Compta est la plateforme dédiée au Département de Comptabilité de notre Cabinet.
+            BTEC Compta est la plateforme dédiée au Département Comptabilité du Cabinet BTEC Bénin.
             Elle centralise, en un seul espace sécurisé, la gestion comptable de l'ensemble de notre portefeuille d'entreprises clientes.
           </p>
 
