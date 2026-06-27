@@ -10,9 +10,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const handleLogin = () => {
-    if (email === "admin@btec.bj" && password === "admin123") {
+    if (email === "admin@btec.bj" && password === "BTEC6267") {
       router.push("/admin");
-    } else if (email === "client@btec.bj" && password === "client123") {
+    } else if (email === "client@btec.bj" && password === "client6267") {
       router.push("/dashboard");
     } else {
       setError("Email ou mot de passe incorrect.");
