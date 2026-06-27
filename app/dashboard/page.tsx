@@ -47,25 +47,26 @@ const TRANSACTIONS = [
 ];
 
 const ENTREPRISES = [
-  { id: 1, nom: "SARL AKPLA Commerce", secteur: "Commerce" },
-  { id: 2, nom: "BENIN TECH Services", secteur: "Services" },
-  { id: 3, nom: "INDUSTRIE ZINSOU", secteur: "Industrie" },
+  { id: 1, nom: "BENIN TECH Services", secteur: "Services" },
 ];
 
-const ECHEANCES = [
-  { label: "TVA Juin 2025", date: "30 Jun", statut: "urgent" },
-  { label: "IS Trimestre 2", date: "15 Jul", statut: "proche" },
-  { label: "Déclaration DGI", date: "31 Jul", statut: "normal" },
-  { label: "Bilan annuel", date: "31 Déc", statut: "normal" },
-];
-
-function PageContent({ active, sub }: { active: string; sub: string }) {
-  const router = useRouter();
+function PageContent({
+  active,
+  sub,
+  itemsMap,
+  onOpenModal,
+}: {
+  active: string;
+  sub: string;
+  itemsMap: Record<string, string[]>;
+  onOpenModal: () => void;
+}) {
   const titles: Record<string, string> = {
-    dashboard: "Tableau de bord", ventes: "Ventes", achats: "Achats",
-    depenses: "Dépenses", clients: "Clients", fournisseurs: "Fournisseurs",
-    tresorerie: "Trésorerie", rapports: "Rapports", fiscal: "Fiscalité",
-    documents: "Documents", messagerie: "Messagerie", parametres: "Paramètres",
+    dashboard: "Tableau de bord",
+    ventes: "Ventes", achats: "Achats", depenses: "Dépenses",
+    clients: "Clients", fournisseurs: "Fournisseurs", tresorerie: "Trésorerie",
+    rapports: "Rapports", fiscal: "Fiscalité", documents: "Documents",
+    messagerie: "Messagerie", parametres: "Paramètres",
   };
 
   if (active === "dashboard") {
@@ -86,61 +87,7 @@ function PageContent({ active, sub }: { active: string; sub: string }) {
             </div>
           ))}
         </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 16 }}>
-          <div style={{ background: COLORS.white, borderRadius: 14, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14, marginBottom: 16 }}>📈 Évolution du CA</div>
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 80 }}>
-              {[40, 55, 45, 70, 65, 80, 90].map((h, i) => (
-                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                  <div style={{ width: "100%", background: COLORS.navy, borderRadius: "4px 4px 0 0", height: `${h}%` }} />
-                  <div style={{ fontSize: 9, color: COLORS.slateLight }}>
-                    {["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul"][i]}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ background: COLORS.white, borderRadius: 14, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14, marginBottom: 16 }}>💳 Répartition des dépenses</div>
-            {[
-              { label: "Salaires", pct: 45, color: COLORS.navy },
-              { label: "Loyer", pct: 20, color: COLORS.gold },
-              { label: "Fournitures", pct: 15, color: COLORS.blue },
-              { label: "Autres", pct: 20, color: COLORS.slate },
-            ].map((d, i) => (
-              <div key={i} style={{ marginBottom: 10 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                  <span style={{ color: COLORS.slate }}>{d.label}</span>
-                  <span style={{ fontWeight: 600, color: COLORS.navy }}>{d.pct}%</span>
-                </div>
-                <div style={{ height: 6, background: "#E2E8F0", borderRadius: 3 }}>
-                  <div style={{ height: 6, background: d.color, borderRadius: 3, width: `${d.pct}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ background: COLORS.white, borderRadius: 14, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14, marginBottom: 16 }}>🏦 Flux financiers</div>
-            {[
-              { label: "Entrées", val: "32 100 000", color: COLORS.green, icon: "↑" },
-              { label: "Sorties", val: "19 870 000", color: COLORS.red, icon: "↓" },
-              { label: "Solde net", val: "12 230 000", color: COLORS.blue, icon: "=" },
-            ].map((f, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid #F8FAFC" : "none" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ color: f.color, fontWeight: 700, fontSize: 16 }}>{f.icon}</span>
-                  <span style={{ fontSize: 13, color: COLORS.slate }}>{f.label}</span>
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: f.color }}>{f.val}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: 16 }}>
+        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
           <div style={{ padding: "14px 16px", borderBottom: "1px solid #F1F5F9", fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>Transactions récentes</div>
           {TRANSACTIONS.map((t, i) => (
             <div key={i} style={{ padding: "12px 16px", borderBottom: i < TRANSACTIONS.length - 1 ? "1px solid #F8FAFC" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -152,19 +99,6 @@ function PageContent({ active, sub }: { active: string; sub: string }) {
                 <div style={{ fontSize: 13, fontWeight: 700, color: t.montant > 0 ? COLORS.green : COLORS.red }}>{t.montant > 0 ? "+" : ""}{t.montant.toLocaleString("fr-FR")}</div>
                 <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 10, background: t.statut === "payé" ? COLORS.greenLight : t.statut === "en attente" ? COLORS.orangeLight : COLORS.cream, color: t.statut === "payé" ? COLORS.green : t.statut === "en attente" ? COLORS.orange : COLORS.slate }}>{t.statut}</span>
               </div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-          <div style={{ padding: "14px 16px", borderBottom: "1px solid #F1F5F9", fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>Échéances fiscales</div>
-          {ECHEANCES.map((e, i) => (
-            <div key={i} style={{ padding: "12px 16px", borderBottom: i < ECHEANCES.length - 1 ? "1px solid #F8FAFC" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{e.label}</div>
-                <div style={{ fontSize: 11, color: COLORS.slateLight }}>Limite : {e.date}</div>
-              </div>
-              <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, background: e.statut === "urgent" ? COLORS.redLight : e.statut === "proche" ? COLORS.orangeLight : COLORS.greenLight, color: e.statut === "urgent" ? COLORS.red : e.statut === "proche" ? COLORS.orange : COLORS.green }}>{e.statut}</span>
             </div>
           ))}
         </div>
@@ -259,15 +193,35 @@ function PageContent({ active, sub }: { active: string; sub: string }) {
     );
   }
 
+  // Sections génériques : Ventes, Achats, Dépenses, Clients, Fournisseurs, Trésorerie, Rapports, Fiscalité
+  const key = `${active}::${sub}`;
+  const list = itemsMap[key] || [];
+
   return (
     <div style={{ background: COLORS.white, borderRadius: 14, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>{titles[active]} {sub ? `— ${sub}` : ""}</h2>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", color: COLORS.slate }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
-        <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy, marginBottom: 6 }}>Section {sub || titles[active]}</div>
-        <div style={{ fontSize: 13 }}>Les données s'afficheront ici.</div>
-        <button style={{ marginTop: 16, background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy }}>{titles[active]} {sub ? `— ${sub}` : ""}</h2>
+        {list.length > 0 && (
+          <button onClick={onOpenModal} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
+        )}
       </div>
+
+      {list.length === 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", color: COLORS.slate }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy, marginBottom: 6 }}>Section {sub || titles[active]}</div>
+          <div style={{ fontSize: 13 }}>Les données s'afficheront ici.</div>
+          <button onClick={onOpenModal} style={{ marginTop: 16, background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {list.map((entry, i) => (
+            <div key={i} style={{ padding: "12px 14px", borderRadius: 8, background: COLORS.cream, fontSize: 13, color: COLORS.navy, fontWeight: 600 }}>
+              {entry}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -279,6 +233,9 @@ export default function DashboardPage() {
   const [openMenus, setOpenMenus] = useState<string[]>(["dashboard"]);
   const [activeEntreprise, setActiveEntreprise] = useState(ENTREPRISES[0]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [itemsMap, setItemsMap] = useState<Record<string, string[]>>({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalValue, setModalValue] = useState("");
 
   const toggleMenu = (id: string) => {
     setOpenMenus(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -290,7 +247,28 @@ export default function DashboardPage() {
     setMenuOpen(false);
   };
 
+  const handleLogout = () => {
+    // TODO: brancher la vraie déconnexion (suppression token/session) quand le backend sera prêt
+    router.push("/login");
+  };
+
+  const handleSaveModal = () => {
+    if (!modalValue.trim()) return;
+    const key = `${activeNav}::${activeSub}`;
+    setItemsMap(prev => ({
+      ...prev,
+      [key]: [...(prev[key] || []), modalValue.trim()],
+    }));
+    setModalValue("");
+    setModalOpen(false);
+  };
+
   const currentItem = NAV_ITEMS.find(n => n.id === activeNav);
+  const titlesForModal: Record<string, string> = {
+    ventes: "Ventes", achats: "Achats", depenses: "Dépenses",
+    clients: "Clients", fournisseurs: "Fournisseurs", tresorerie: "Trésorerie",
+    rapports: "Rapports", fiscal: "Fiscalité",
+  };
 
   const SidebarContent = () => (
     <>
@@ -334,11 +312,30 @@ export default function DashboardPage() {
       </nav>
       <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 28, height: 28, borderRadius: "50%", background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: COLORS.navy }}>M</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ color: COLORS.white, fontSize: 12, fontWeight: 600 }}>Moumouni Nabil</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ color: COLORS.white, fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Moumouni Nabil</div>
           <div style={{ color: COLORS.slateLight, fontSize: 10 }}>Comptable principal</div>
-          <div onClick={() => router.push("/login")} style={{ marginTop: 4, fontSize: 11, color: COLORS.red, cursor: "pointer", fontWeight: 600 }}>🚪 Déconnexion</div>
         </div>
+        <button
+          onClick={handleLogout}
+          title="Déconnexion"
+          style={{
+            background: "rgba(220,38,38,0.12)",
+            border: "none",
+            borderRadius: 8,
+            width: 30,
+            height: 30,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: COLORS.red,
+            fontSize: 14,
+            flexShrink: 0,
+          }}
+        >
+          🚪
+        </button>
       </div>
     </>
   );
@@ -361,11 +358,14 @@ export default function DashboardPage() {
       `}</style>
 
       <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', system-ui, sans-serif", background: COLORS.cream, overflow: "hidden" }}>
+
+        {/* SIDEBAR DESKTOP */}
         <div className="sidebar-desktop" style={{ width: 220, minWidth: 220, background: COLORS.navy, flexDirection: "column", overflow: "hidden" }}>
           <SidebarContent />
         </div>
 
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+          {/* TOPBAR */}
           <div style={{ background: COLORS.white, borderBottom: "1px solid #E2E8F0", padding: "0 16px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
               <button className="menu-mobile" onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: COLORS.navy, padding: 0, flexShrink: 0 }}>☰</button>
@@ -384,6 +384,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/* MENU MOBILE */}
           {menuOpen && (
             <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, display: "flex" }}>
               <div style={{ width: "min(260px, 82vw)", background: COLORS.navy, display: "flex", flexDirection: "column", overflowY: "auto" }}>
@@ -396,11 +397,39 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {/* PAGE CONTENT */}
           <div style={{ flex: 1, overflowY: "auto", padding: 16, minWidth: 0 }}>
-            <PageContent active={activeNav} sub={activeSub} />
+            <PageContent active={activeNav} sub={activeSub} itemsMap={itemsMap} onOpenModal={() => setModalOpen(true)} />
           </div>
         </div>
       </div>
+
+      {/* MODAL AJOUTER */}
+      {modalOpen && (
+        <div
+          onClick={() => setModalOpen(false)}
+          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 380 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 4 }}>
+              Ajouter — {titlesForModal[activeNav] || currentItem?.label}{activeSub ? ` (${activeSub})` : ""}
+            </h3>
+            <p style={{ fontSize: 12, color: COLORS.slate, marginBottom: 16 }}>Saisissez un libellé pour cette nouvelle entrée.</p>
+            <input
+              autoFocus
+              value={modalValue}
+              onChange={(e) => setModalValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSaveModal(); }}
+              placeholder="Ex : Nom, référence, description..."
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 16 }}
+            />
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => { setModalOpen(false); setModalValue(""); }} style={{ background: COLORS.cream, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+              <button onClick={handleSaveModal} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Enregistrer</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
