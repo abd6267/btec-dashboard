@@ -23,10 +23,10 @@ const NAV_ADMIN = [
 ];
 
 const ENTREPRISES = [
-  { nom: "SARL AKPLA Commerce", secteur: "Commerce", statut: "actif", users: 3 },
-  { nom: "BENIN TECH Services", secteur: "Services", statut: "actif", users: 2 },
-  { nom: "INDUSTRIE ZINSOU", secteur: "Industrie", statut: "actif", users: 4 },
-  { nom: "GIE ALAFIA", secteur: "Agriculture", statut: "suspendu", users: 1 },
+  { nom: "SARL AKPLA Commerce", secteur: "Commerce", statut: "actif", users: 3, abonnement: "Business" },
+  { nom: "BENIN TECH Services", secteur: "Services", statut: "actif", users: 2, abonnement: "Starter" },
+  { nom: "INDUSTRIE ZINSOU", secteur: "Industrie", statut: "actif", users: 4, abonnement: "Enterprise" },
+  { nom: "GIE ALAFIA", secteur: "Agriculture", statut: "suspendu", users: 1, abonnement: "Starter" },
 ];
 
 const COMPTABLES = [
@@ -35,33 +35,56 @@ const COMPTABLES = [
   { nom: "Koffi Jean", email: "jean@btec.bj", entreprises: 1, statut: "inactif" },
 ];
 
+const UTILISATEURS = [
+  { nom: "Kofi Mensah", email: "kofi@akpla.bj", entreprise: "SARL AKPLA", role: "Admin", statut: "actif" },
+  { nom: "Aminata Diallo", email: "aminata@benintech.bj", entreprise: "BENIN TECH", role: "Lecteur", statut: "actif" },
+  { nom: "Jean Zinsou", email: "jean@zinsou.bj", entreprise: "INDUSTRIE ZINSOU", role: "Admin", statut: "actif" },
+  { nom: "Marie Alafia", email: "marie@alafia.bj", entreprise: "GIE ALAFIA", role: "Lecteur", statut: "suspendu" },
+];
+
+const ABONNEMENTS = [
+  { entreprise: "SARL AKPLA Commerce", plan: "Business", prix: "35 000", statut: "actif", renouvellement: "01 Jul 2025" },
+  { entreprise: "BENIN TECH Services", plan: "Starter", prix: "15 000", statut: "actif", renouvellement: "15 Jul 2025" },
+  { entreprise: "INDUSTRIE ZINSOU", plan: "Enterprise", prix: "75 000", statut: "actif", renouvellement: "30 Jun 2025" },
+  { entreprise: "GIE ALAFIA", plan: "Starter", prix: "15 000", statut: "suspendu", renouvellement: "01 Jun 2025" },
+];
+
+const PAIEMENTS = [
+  { entreprise: "INDUSTRIE ZINSOU", montant: "75 000", date: "01 Jun 2025", statut: "payé" },
+  { entreprise: "SARL AKPLA Commerce", montant: "35 000", date: "01 Jun 2025", statut: "payé" },
+  { entreprise: "BENIN TECH Services", montant: "15 000", date: "15 Mai 2025", statut: "payé" },
+  { entreprise: "GIE ALAFIA", montant: "15 000", date: "01 Mai 2025", statut: "impayé" },
+];
+
 function SupervisionPage() {
   const stats = [
     { label: "Entreprises", value: "4", icon: "🏢", color: COLORS.blue },
     { label: "Utilisateurs", value: "10", icon: "👥", color: COLORS.green },
     { label: "Comptables", value: "3", icon: "👨‍💼", color: COLORS.gold },
     { label: "Abonnements actifs", value: "3", icon: "✅", color: COLORS.green },
+    { label: "Revenu mensuel", value: "125 000", icon: "💰", color: COLORS.navy },
+    { label: "Tickets ouverts", value: "2", icon: "🎫", color: COLORS.orange },
   ];
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
         {stats.map((s, i) => (
           <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", borderLeft: `4px solid ${s.color}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: COLORS.slate }}>{s.label}</span>
               <span style={{ fontSize: 20 }}>{s.icon}</span>
             </div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: COLORS.navy }}>{s.value}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: COLORS.navy }}>{s.value}</div>
           </div>
         ))}
       </div>
-      <div style={{ background: COLORS.white, borderRadius: 14, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: 16 }}>
+      <div style={{ background: COLORS.white, borderRadius: 14, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
         <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14, marginBottom: 12 }}>Activité récente</div>
         {[
           { action: "Nouvelle entreprise créée", detail: "SARL AKPLA Commerce", time: "Il y a 2h" },
           { action: "Document déposé", detail: "BENIN TECH - Bilan 2024", time: "Il y a 4h" },
           { action: "Rapport généré", detail: "INDUSTRIE ZINSOU - CdR", time: "Il y a 6h" },
-          { action: "Utilisateur ajouté", detail: "GIE ALAFIA - nouveau accès", time: "Il y a 1j" },
+          { action: "Paiement reçu", detail: "SARL AKPLA - 35 000 FCFA", time: "Il y a 1j" },
         ].map((a, i) => (
           <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: i < 3 ? "1px solid #F8FAFC" : "none" }}>
             <div>
@@ -89,7 +112,7 @@ function EntreprisesPage() {
             <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{e.nom}</div>
             <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: e.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: e.statut === "actif" ? COLORS.green : COLORS.red }}>{e.statut}</span>
           </div>
-          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 10 }}>{e.secteur} · {e.users} utilisateurs</div>
+          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 10 }}>{e.secteur} · {e.users} utilisateurs · Plan {e.abonnement}</div>
           <div style={{ display: "flex", gap: 8 }}>
             <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
             <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.orangeLight, color: COLORS.orange, cursor: "pointer", fontWeight: 600 }}>⏸ Suspendre</button>
@@ -118,6 +141,139 @@ function ComptablesPage() {
             <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
             <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.redLight, color: COLORS.red, cursor: "pointer", fontWeight: 600 }}>🗑 Supprimer</button>
           </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function UtilisateursPage({ sub }: { sub: string }) {
+  const roles = ["Admin", "Comptable", "Lecteur", "Invité"];
+  const permissions = [
+    { action: "Voir les rapports", admin: true, comptable: true, lecteur: true, invite: false },
+    { action: "Créer des factures", admin: true, comptable: true, lecteur: false, invite: false },
+    { action: "Gérer les utilisateurs", admin: true, comptable: false, lecteur: false, invite: false },
+    { action: "Déposer des documents", admin: true, comptable: true, lecteur: false, invite: false },
+    { action: "Voir la trésorerie", admin: true, comptable: true, lecteur: true, invite: false },
+    { action: "Modifier les paramètres", admin: true, comptable: false, lecteur: false, invite: false },
+  ];
+
+  if (sub === "Permissions") {
+    return (
+      <div>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Gestion des Permissions</h2>
+        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", padding: "12px 16px", background: COLORS.cream, gap: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy }}>Action</div>
+            {roles.map((r, i) => <div key={i} style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy, textAlign: "center" }}>{r}</div>)}
+          </div>
+          {permissions.map((p, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", padding: "12px 16px", borderTop: "1px solid #F1F5F9", gap: 8, alignItems: "center" }}>
+              <div style={{ fontSize: 13, color: COLORS.navy }}>{p.action}</div>
+              {[p.admin, p.comptable, p.lecteur, p.invite].map((val, j) => (
+                <div key={j} style={{ textAlign: "center", fontSize: 16 }}>{val ? "✅" : "❌"}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Utilisateurs</h2>
+        <button style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Ajouter</button>
+      </div>
+      {UTILISATEURS.map((u, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{u.nom}</div>
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: u.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: u.statut === "actif" ? COLORS.green : COLORS.red }}>{u.statut}</span>
+          </div>
+          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>{u.email}</div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 10, alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: COLORS.slate }}>{u.entreprise}</span>
+            <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: COLORS.blueLight, color: COLORS.blue, fontWeight: 600 }}>{u.role}</span>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
+            <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.redLight, color: COLORS.red, cursor: "pointer", fontWeight: 600 }}>🗑 Supprimer</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FacturationPage({ sub }: { sub: string }) {
+  if (sub === "Paiements") {
+    return (
+      <div>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Historique des Paiements</h2>
+        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          {PAIEMENTS.map((p, i) => (
+            <div key={i} style={{ padding: "14px 16px", borderBottom: i < PAIEMENTS.length - 1 ? "1px solid #F8FAFC" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{p.entreprise}</div>
+                <div style={{ fontSize: 11, color: COLORS.slateLight }}>{p.date}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy }}>{p.montant} FCFA</div>
+                <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: p.statut === "payé" ? COLORS.greenLight : COLORS.redLight, color: p.statut === "payé" ? COLORS.green : COLORS.red, fontWeight: 600 }}>{p.statut}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (sub === "Renouvellements") {
+    return (
+      <div>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Renouvellements à venir</h2>
+        {ABONNEMENTS.map((a, i) => (
+          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{a.entreprise}</div>
+              <div style={{ fontSize: 12, color: COLORS.slate }}>Plan {a.plan} · {a.prix} FCFA/mois</div>
+              <div style={{ fontSize: 11, color: COLORS.slateLight }}>Renouvellement : {a.renouvellement}</div>
+            </div>
+            <button style={{ fontSize: 11, padding: "6px 12px", borderRadius: 6, border: "none", background: COLORS.gold, color: COLORS.navy, cursor: "pointer", fontWeight: 700 }}>Renouveler</button>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Abonnements</h2>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+        {[
+          { plan: "Starter", count: 2, prix: "15 000", color: COLORS.slate },
+          { plan: "Business", count: 1, prix: "35 000", color: COLORS.gold },
+          { plan: "Enterprise", count: 1, prix: "75 000", color: COLORS.green },
+        ].map((p, i) => (
+          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 16, boxShadow: "0 2px 6px rgba(0,0,0,0.05)", borderTop: `3px solid ${p.color}`, textAlign: "center" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy, marginBottom: 4 }}>{p.plan}</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: p.color }}>{p.count}</div>
+            <div style={{ fontSize: 11, color: COLORS.slate }}>clients · {p.prix} FCFA</div>
+          </div>
+        ))}
+      </div>
+      {ABONNEMENTS.map((a, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{a.entreprise}</div>
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: a.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: a.statut === "actif" ? COLORS.green : COLORS.red }}>{a.statut}</span>
+          </div>
+          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>Plan {a.plan} · {a.prix} FCFA/mois</div>
+          <div style={{ fontSize: 11, color: COLORS.slateLight }}>Renouvellement : {a.renouvellement}</div>
         </div>
       ))}
     </div>
@@ -158,6 +314,8 @@ export default function AdminPage() {
       case "supervision": return <SupervisionPage />;
       case "entreprises": return <EntreprisesPage />;
       case "comptables": return <ComptablesPage />;
+      case "utilisateurs": return <UtilisateursPage sub={activeSub} />;
+      case "facturation": return <FacturationPage sub={activeSub} />;
       default: return <PlaceholderPage label={`${currentItem?.label}${activeSub ? ` — ${activeSub}` : ""}`} />;
     }
   };
@@ -194,7 +352,14 @@ export default function AdminPage() {
         ))}
       </nav>
       <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-        <button onClick={() => router.push("/")} style={{ width: "100%", background: COLORS.redLight, color: COLORS.red, border: "none", borderRadius: 8, padding: "8px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: COLORS.navy }}>A</div>
+          <div>
+            <div style={{ color: COLORS.white, fontSize: 12, fontWeight: 600 }}>Administrateur</div>
+            <div style={{ color: COLORS.slateLight, fontSize: 10 }}>Cabinet BTEC</div>
+          </div>
+        </div>
+        <button onClick={() => router.push("/login")} style={{ width: "100%", background: COLORS.redLight, color: COLORS.red, border: "none", borderRadius: 8, padding: "8px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
           🚪 Déconnexion
         </button>
       </div>
