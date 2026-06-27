@@ -52,6 +52,16 @@ const PAIEMENTS = [
   { entreprise: "BENIN TECH Services", montant: "15 000", date: "15 Mai 2025", statut: "payé" },
 ];
 
+// Initial permissions state
+const INITIAL_PERMISSIONS = [
+  { action: "Voir les rapports",       admin: true,  comptable: true,  lecteur: true,  invite: false },
+  { action: "Créer des factures",      admin: true,  comptable: true,  lecteur: false, invite: false },
+  { action: "Gérer les utilisateurs",  admin: true,  comptable: false, lecteur: false, invite: false },
+  { action: "Déposer des documents",   admin: true,  comptable: true,  lecteur: false, invite: false },
+  { action: "Voir la trésorerie",      admin: true,  comptable: true,  lecteur: true,  invite: false },
+  { action: "Modifier les paramètres", admin: true,  comptable: false, lecteur: false, invite: false },
+];
+
 // MODAL COMPONENT
 function Modal({ titre, onClose, children }: { titre: string; onClose: () => void; children: React.ReactNode }) {
   return (
@@ -67,7 +77,6 @@ function Modal({ titre, onClose, children }: { titre: string; onClose: () => voi
   );
 }
 
-// INPUT STYLE
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "11px 14px", borderRadius: 10,
   border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none",
@@ -310,6 +319,181 @@ function ComptablesPage() {
   );
 }
 
+// ─── PERMISSIONS TOGGLE CELL ────────────────────────────────────────────────
+function PermCell({
+  value,
+  locked,
+  onChange,
+}: {
+  value: boolean;
+  locked?: boolean;
+  onChange?: () => void;
+}) {
+  if (locked) {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <span
+          title="Colonne Admin verrouillée"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            background: "#F1F5F9",
+            fontSize: 16,
+            cursor: "not-allowed",
+            opacity: 0.7,
+          }}
+        >
+          {value ? "✅" : "❌"}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <button
+        onClick={onChange}
+        title={value ? "Cliquer pour retirer l'accès" : "Cliquer pour accorder l'accès"}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 32,
+          height: 32,
+          borderRadius: 8,
+          border: "2px solid",
+          borderColor: value ? COLORS.green : "#E2E8F0",
+          background: value ? COLORS.greenLight : "#F8FAFC",
+          fontSize: 16,
+          cursor: "pointer",
+          transition: "all 0.15s ease",
+          outline: "none",
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.12)";
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+        }}
+      >
+        {value ? "✅" : "❌"}
+      </button>
+    </div>
+  );
+}
+
+// ─── PERMISSIONS PAGE ────────────────────────────────────────────────────────
+function PermissionsPage() {
+  const [permissions, setPermissions] = useState(INITIAL_PERMISSIONS);
+  const [saved, setSaved] = useState(false);
+
+  const toggle = (rowIdx: number, col: "comptable" | "lecteur" | "invite") => {
+    setPermissions(prev =>
+      prev.map((p, i) => (i === rowIdx ? { ...p, [col]: !p[col] } : p))
+    );
+    setSaved(false);
+  };
+
+  const handleSave = () => {
+    // Persist logic would go here (API call, etc.)
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const roles = ["Admin", "Comptable", "Lecteur", "Invité"];
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Permissions</h2>
+        <button
+          onClick={handleSave}
+          style={{
+            padding: "8px 16px",
+            background: COLORS.navy,
+            color: COLORS.white,
+            border: "none",
+            borderRadius: 8,
+            fontWeight: 700,
+            fontSize: 13,
+            cursor: "pointer",
+          }}
+        >
+          💾 Enregistrer
+        </button>
+      </div>
+
+      {/* Save confirmation */}
+      {saved && (
+        <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>
+          ✅ Permissions enregistrées avec succès !
+        </div>
+      )}
+
+      {/* Legend */}
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 12, color: COLORS.slate }}>
+          🔒 <b style={{ color: COLORS.navy }}>Admin</b> — colonne verrouillée (accès total permanent)
+        </span>
+        <span style={{ fontSize: 12, color: COLORS.slate }}>
+          · Cliquez sur ✅/❌ pour modifier les autres rôles
+        </span>
+      </div>
+
+      {/* Table */}
+      <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        {/* Table header */}
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", padding: "12px 16px", background: COLORS.cream, gap: 8, alignItems: "center" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy }}>Action</div>
+          {roles.map((r, i) => (
+            <div key={i} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? COLORS.red : COLORS.navy }}>{r}</div>
+              {i === 0 && <div style={{ fontSize: 9, color: COLORS.red, fontWeight: 600, letterSpacing: "0.05em" }}>🔒 VERROUILLÉ</div>}
+            </div>
+          ))}
+        </div>
+
+        {/* Table rows */}
+        {permissions.map((p, rowIdx) => (
+          <div
+            key={rowIdx}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
+              padding: "12px 16px",
+              borderTop: "1px solid #F1F5F9",
+              gap: 8,
+              alignItems: "center",
+              transition: "background 0.1s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#FAFBFF")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+          >
+            <div style={{ fontSize: 13, color: COLORS.navy, fontWeight: 500 }}>{p.action}</div>
+
+            {/* Admin — locked */}
+            <PermCell value={p.admin} locked />
+
+            {/* Comptable */}
+            <PermCell value={p.comptable} onChange={() => toggle(rowIdx, "comptable")} />
+
+            {/* Lecteur */}
+            <PermCell value={p.lecteur} onChange={() => toggle(rowIdx, "lecteur")} />
+
+            {/* Invité */}
+            <PermCell value={p.invite} onChange={() => toggle(rowIdx, "invite")} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function UtilisateursPage({ sub }: { sub: string }) {
   const [utilisateurs, setUtilisateurs] = useState(UTILISATEURS_DATA);
   const [modal, setModal] = useState<string | null>(null);
@@ -318,35 +502,9 @@ function UtilisateursPage({ sub }: { sub: string }) {
   const [success, setSuccess] = useState("");
 
   const roles = ["Admin", "Comptable", "Lecteur", "Invité"];
-  const permissions = [
-    { action: "Voir les rapports", admin: true, comptable: true, lecteur: true, invite: false },
-    { action: "Créer des factures", admin: true, comptable: true, lecteur: false, invite: false },
-    { action: "Gérer les utilisateurs", admin: true, comptable: false, lecteur: false, invite: false },
-    { action: "Déposer des documents", admin: true, comptable: true, lecteur: false, invite: false },
-    { action: "Voir la trésorerie", admin: true, comptable: true, lecteur: true, invite: false },
-    { action: "Modifier les paramètres", admin: true, comptable: false, lecteur: false, invite: false },
-  ];
 
   if (sub === "Permissions") {
-    return (
-      <div>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Gestion des Permissions</h2>
-        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", padding: "12px 16px", background: COLORS.cream, gap: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy }}>Action</div>
-            {roles.map((r, i) => <div key={i} style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy, textAlign: "center" }}>{r}</div>)}
-          </div>
-          {permissions.map((p, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", padding: "12px 16px", borderTop: "1px solid #F1F5F9", gap: 8, alignItems: "center" }}>
-              <div style={{ fontSize: 13, color: COLORS.navy }}>{p.action}</div>
-              {[p.admin, p.comptable, p.lecteur, p.invite].map((val, j) => (
-                <div key={j} style={{ textAlign: "center", fontSize: 16 }}>{val ? "✅" : "❌"}</div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <PermissionsPage />;
   }
 
   const handleAjouter = () => {
