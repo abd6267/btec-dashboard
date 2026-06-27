@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 const COLORS = {
@@ -50,16 +50,48 @@ const ENTREPRISES = [
   { id: 1, nom: "BENIN TECH Services", secteur: "Services" },
 ];
 
+type Message = { from: string; text: string; time: string; me: boolean };
+type DocItem = { nom: string; type: string; taille: string; date: string; url?: string };
+
+const INITIAL_MESSAGES: Message[] = [
+  { from: "Cabinet BTEC", text: "Bonjour, vos documents du mois de Mai sont prêts.", time: "10:30", me: false },
+  { from: "Moi", text: "Merci ! Je vais les consulter.", time: "10:45", me: true },
+  { from: "Cabinet BTEC", text: "N'hésitez pas si vous avez des questions.", time: "11:00", me: false },
+];
+
+const INITIAL_DOCS: DocItem[] = [
+  { nom: "Bilan_2024.pdf", type: "PDF", taille: "2.4 MB", date: "20 Jun" },
+  { nom: "Factures_Mai.xlsx", type: "Excel", taille: "1.1 MB", date: "18 Jun" },
+  { nom: "Contrat_ZINSOU.pdf", type: "PDF", taille: "890 KB", date: "15 Jun" },
+  { nom: "Declaration_TVA.pdf", type: "PDF", taille: "540 KB", date: "10 Jun" },
+];
+
 function PageContent({
   active,
   sub,
   itemsMap,
   onOpenModal,
+  messages,
+  messageInput,
+  setMessageInput,
+  onSendMessage,
+  docs,
+  onBrowseClick,
+  onDownload,
+  onOpenSettings,
 }: {
   active: string;
   sub: string;
   itemsMap: Record<string, string[]>;
   onOpenModal: () => void;
+  messages: Message[];
+  messageInput: string;
+  setMessageInput: (v: string) => void;
+  onSendMessage: () => void;
+  docs: DocItem[];
+  onBrowseClick: () => void;
+  onDownload: (doc: DocItem) => void;
+  onOpenSettings: (modal: "profil" | "password" | "securite") => void;
 }) {
   const titles: Record<string, string> = {
     dashboard: "Tableau de bord",
@@ -107,40 +139,35 @@ function PageContent({
   }
 
   if (active === "messagerie") {
-    const messages = [
-      { from: "Cabinet BTEC", text: "Bonjour, vos documents du mois de Mai sont prêts.", time: "10:30", me: false },
-      { from: "Moi", text: "Merci ! Je vais les consulter.", time: "10:45", me: true },
-      { from: "Cabinet BTEC", text: "N'hésitez pas si vous avez des questions.", time: "11:00", me: false },
-    ];
     return (
-      <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", height: 400, display: "flex", flexDirection: "column" }}>
+      <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", height: 460, display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "14px 16px", borderBottom: "1px solid #F1F5F9", fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>💬 Messagerie — Cabinet BTEC</div>
         <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
           {messages.map((m, i) => (
             <div key={i} style={{ display: "flex", justifyContent: m.me ? "flex-end" : "flex-start" }}>
               <div style={{ maxWidth: "70%", background: m.me ? COLORS.navy : COLORS.cream, color: m.me ? COLORS.white : COLORS.navy, borderRadius: m.me ? "14px 14px 0 14px" : "14px 14px 14px 0", padding: "10px 14px" }}>
                 {!m.me && <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.gold, marginBottom: 4 }}>{m.from}</div>}
-                <div style={{ fontSize: 13 }}>{m.text}</div>
+                <div style={{ fontSize: 13, wordBreak: "break-word" }}>{m.text}</div>
                 <div style={{ fontSize: 10, color: m.me ? COLORS.slateLight : COLORS.slate, marginTop: 4, textAlign: "right" }}>{m.time}</div>
               </div>
             </div>
           ))}
         </div>
         <div style={{ padding: "12px 16px", borderTop: "1px solid #F1F5F9", display: "flex", gap: 8 }}>
-          <input placeholder="Écrire un message..." style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }} />
-          <button style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 10, padding: "10px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Envoyer</button>
+          <input
+            value={messageInput}
+            onChange={(e) => setMessageInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") onSendMessage(); }}
+            placeholder="Écrire un message..."
+            style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }}
+          />
+          <button onClick={onSendMessage} style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 10, padding: "10px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Envoyer</button>
         </div>
       </div>
     );
   }
 
   if (active === "documents") {
-    const docs = [
-      { nom: "Bilan_2024.pdf", type: "PDF", taille: "2.4 MB", date: "20 Jun" },
-      { nom: "Factures_Mai.xlsx", type: "Excel", taille: "1.1 MB", date: "18 Jun" },
-      { nom: "Contrat_ZINSOU.pdf", type: "PDF", taille: "890 KB", date: "15 Jun" },
-      { nom: "Declaration_TVA.pdf", type: "PDF", taille: "540 KB", date: "10 Jun" },
-    ];
     return (
       <div>
         <div style={{ background: COLORS.white, borderRadius: 14, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: 16 }}>
@@ -148,20 +175,20 @@ function PageContent({
             <div style={{ fontSize: 32, marginBottom: 8 }}>📤</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, marginBottom: 4 }}>Déposer vos fichiers ici</div>
             <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 12 }}>PDF, Excel, Word acceptés</div>
-            <button style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>📁 Parcourir</button>
+            <button onClick={onBrowseClick} style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>📁 Parcourir</button>
           </div>
         </div>
         <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
           <div style={{ padding: "14px 16px", borderBottom: "1px solid #F1F5F9", fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>📂 Documents archivés</div>
           {docs.map((d, i) => (
-            <div key={i} style={{ padding: "12px 16px", borderBottom: i < docs.length - 1 ? "1px solid #F8FAFC" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{d.nom}</div>
+            <div key={i} style={{ padding: "12px 16px", borderBottom: i < docs.length - 1 ? "1px solid #F8FAFC" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.nom}</div>
                 <div style={{ fontSize: 11, color: COLORS.slateLight }}>{d.type} · {d.taille} · {d.date}</div>
               </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>👁 Aperçu</button>
-                <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.greenLight, color: COLORS.green, cursor: "pointer", fontWeight: 600 }}>📥 Télécharger</button>
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <button onClick={() => onDownload(d)} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>👁 Aperçu</button>
+                <button onClick={() => onDownload(d)} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.greenLight, color: COLORS.green, cursor: "pointer", fontWeight: 600 }}>📥 Télécharger</button>
               </div>
             </div>
           ))}
@@ -174,11 +201,11 @@ function PageContent({
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {[
-          { icon: "👤", titre: "Profil", desc: "Modifier vos informations personnelles" },
-          { icon: "🔑", titre: "Mot de passe", desc: "Changer votre mot de passe" },
-          { icon: "🔒", titre: "Sécurité", desc: "Authentification à deux facteurs" },
+          { icon: "👤", titre: "Profil", desc: "Modifier vos informations personnelles", key: "profil" as const },
+          { icon: "🔑", titre: "Mot de passe", desc: "Changer votre mot de passe", key: "password" as const },
+          { icon: "🔒", titre: "Sécurité", desc: "Authentification à deux facteurs", key: "securite" as const },
         ].map((p, i) => (
-          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "16px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+          <div key={i} onClick={() => onOpenSettings(p.key)} style={{ background: COLORS.white, borderRadius: 12, padding: "16px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <span style={{ fontSize: 24 }}>{p.icon}</span>
               <div>
@@ -237,6 +264,23 @@ export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalValue, setModalValue] = useState("");
 
+  // Messagerie
+  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+  const [messageInput, setMessageInput] = useState("");
+
+  // Documents
+  const [docs, setDocs] = useState<DocItem[]>(INITIAL_DOCS);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Paramètres
+  const [settingsModal, setSettingsModal] = useState<null | "profil" | "password" | "securite">(null);
+  const [profilNom, setProfilNom] = useState("Moumouni Nabil");
+  const [profilEmail, setProfilEmail] = useState("moumouni.nabil@bteceenin.com");
+  const [pwdCurrent, setPwdCurrent] = useState("");
+  const [pwdNew, setPwdNew] = useState("");
+  const [pwdConfirm, setPwdConfirm] = useState("");
+  const [twoFA, setTwoFA] = useState(false);
+
   const toggleMenu = (id: string) => {
     setOpenMenus(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
@@ -261,6 +305,81 @@ export default function DashboardPage() {
     }));
     setModalValue("");
     setModalOpen(false);
+  };
+
+  // --- Messagerie ---
+  const handleSendMessage = () => {
+    if (!messageInput.trim()) return;
+    const time = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    setMessages(prev => [...prev, { from: "Moi", text: messageInput.trim(), time, me: true }]);
+    setMessageInput("");
+  };
+
+  // --- Documents ---
+  const handleBrowseClick = () => fileInputRef.current?.click();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+    const now = new Date();
+    const dateStr = `${now.getDate()} ${months[now.getMonth()]}`;
+    const newDocs: DocItem[] = Array.from(files).map((f) => ({
+      nom: f.name,
+      type: f.name.split(".").pop()?.toUpperCase() || "Fichier",
+      taille: f.size / (1024 * 1024) >= 1 ? `${(f.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(f.size / 1024))} KB`,
+      date: dateStr,
+      url: URL.createObjectURL(f),
+    }));
+    setDocs(prev => [...newDocs, ...prev]);
+    e.target.value = "";
+  };
+
+  const handleDownload = (doc: DocItem) => {
+    let url = doc.url;
+    let isTemporary = false;
+    if (!url) {
+      const blob = new Blob(
+        [`Document : ${doc.nom}\nType : ${doc.type}\nTaille : ${doc.taille}\nDate : ${doc.date}\n\nCeci est un fichier de démonstration (données fictives).`],
+        { type: "text/plain" }
+      );
+      url = URL.createObjectURL(blob);
+      isTemporary = true;
+    }
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = doc.nom;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    if (isTemporary) URL.revokeObjectURL(url);
+  };
+
+  // --- Paramètres ---
+  const handleSaveProfil = () => {
+    setSettingsModal(null);
+    alert("Profil mis à jour avec succès.");
+  };
+
+  const handleSavePassword = () => {
+    if (!pwdCurrent || !pwdNew || !pwdConfirm) {
+      alert("Veuillez remplir tous les champs.");
+      return;
+    }
+    if (pwdNew !== pwdConfirm) {
+      alert("Les mots de passe ne correspondent pas.");
+      return;
+    }
+    setPwdCurrent("");
+    setPwdNew("");
+    setPwdConfirm("");
+    setSettingsModal(null);
+    alert("Mot de passe changé avec succès.");
+  };
+
+  const handleSaveSecurite = () => {
+    setSettingsModal(null);
+    alert(twoFA ? "Authentification à deux facteurs activée." : "Authentification à deux facteurs désactivée.");
   };
 
   const currentItem = NAV_ITEMS.find(n => n.id === activeNav);
@@ -313,7 +432,7 @@ export default function DashboardPage() {
       <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 28, height: 28, borderRadius: "50%", background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: COLORS.navy }}>M</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: COLORS.white, fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Moumouni Nabil</div>
+          <div style={{ color: COLORS.white, fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profilNom}</div>
           <div style={{ color: COLORS.slateLight, fontSize: 10 }}>Comptable principal</div>
         </div>
         <button
@@ -357,6 +476,9 @@ export default function DashboardPage() {
         @media (max-width: 380px) { .stats-grid { grid-template-columns: repeat(1, 1fr) !important; } }
       `}</style>
 
+      {/* Input fichier caché, partagé par le module Documents */}
+      <input ref={fileInputRef} type="file" multiple onChange={handleFileChange} style={{ display: "none" }} />
+
       <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', system-ui, sans-serif", background: COLORS.cream, overflow: "hidden" }}>
 
         {/* SIDEBAR DESKTOP */}
@@ -380,7 +502,7 @@ export default function DashboardPage() {
               <div style={{ background: COLORS.cream, borderRadius: 8, padding: "6px 10px", fontSize: 13, cursor: "pointer" }}>
                 🔔<span style={{ background: COLORS.red, color: "white", borderRadius: "50%", width: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, marginLeft: 4 }}>3</span>
               </div>
-              <div style={{ background: COLORS.gold, color: COLORS.navy, borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>⚙</div>
+              <div onClick={() => handleNav("parametres")} style={{ background: COLORS.gold, color: COLORS.navy, borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>⚙</div>
             </div>
           </div>
 
@@ -399,12 +521,25 @@ export default function DashboardPage() {
 
           {/* PAGE CONTENT */}
           <div style={{ flex: 1, overflowY: "auto", padding: 16, minWidth: 0 }}>
-            <PageContent active={activeNav} sub={activeSub} itemsMap={itemsMap} onOpenModal={() => setModalOpen(true)} />
+            <PageContent
+              active={activeNav}
+              sub={activeSub}
+              itemsMap={itemsMap}
+              onOpenModal={() => setModalOpen(true)}
+              messages={messages}
+              messageInput={messageInput}
+              setMessageInput={setMessageInput}
+              onSendMessage={handleSendMessage}
+              docs={docs}
+              onBrowseClick={handleBrowseClick}
+              onDownload={handleDownload}
+              onOpenSettings={(modal) => setSettingsModal(modal)}
+            />
           </div>
         </div>
       </div>
 
-      {/* MODAL AJOUTER */}
+      {/* MODAL AJOUTER (sections génériques) */}
       {modalOpen && (
         <div
           onClick={() => setModalOpen(false)}
@@ -426,6 +561,93 @@ export default function DashboardPage() {
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button onClick={() => { setModalOpen(false); setModalValue(""); }} style={{ background: COLORS.cream, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
               <button onClick={handleSaveModal} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Enregistrer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PARAMÈTRES : PROFIL */}
+      {settingsModal === "profil" && (
+        <div onClick={() => setSettingsModal(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 380 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>👤 Modifier le profil</h3>
+            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Nom complet</label>
+            <input
+              value={profilNom}
+              onChange={(e) => setProfilNom(e.target.value)}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 14 }}
+            />
+            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Adresse email</label>
+            <input
+              value={profilEmail}
+              onChange={(e) => setProfilEmail(e.target.value)}
+              type="email"
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 16 }}
+            />
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => setSettingsModal(null)} style={{ background: COLORS.cream, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+              <button onClick={handleSaveProfil} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Enregistrer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PARAMÈTRES : MOT DE PASSE */}
+      {settingsModal === "password" && (
+        <div onClick={() => setSettingsModal(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 380 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>🔑 Changer le mot de passe</h3>
+            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Mot de passe actuel</label>
+            <input
+              type="password"
+              value={pwdCurrent}
+              onChange={(e) => setPwdCurrent(e.target.value)}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 14 }}
+            />
+            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Nouveau mot de passe</label>
+            <input
+              type="password"
+              value={pwdNew}
+              onChange={(e) => setPwdNew(e.target.value)}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 14 }}
+            />
+            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Confirmer le nouveau mot de passe</label>
+            <input
+              type="password"
+              value={pwdConfirm}
+              onChange={(e) => setPwdConfirm(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSavePassword(); }}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 16 }}
+            />
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => { setSettingsModal(null); setPwdCurrent(""); setPwdNew(""); setPwdConfirm(""); }} style={{ background: COLORS.cream, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+              <button onClick={handleSavePassword} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Changer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PARAMÈTRES : SÉCURITÉ */}
+      {settingsModal === "securite" && (
+        <div onClick={() => setSettingsModal(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 380 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 6 }}>🔒 Sécurité du compte</h3>
+            <p style={{ fontSize: 12, color: COLORS.slate, marginBottom: 18 }}>Renforcez la sécurité avec l'authentification à deux facteurs (2FA).</p>
+            <div
+              onClick={() => setTwoFA(!twoFA)}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", borderRadius: 10, background: COLORS.cream, cursor: "pointer", marginBottom: 18 }}
+            >
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>Authentification à deux facteurs</div>
+                <div style={{ fontSize: 11, color: COLORS.slate }}>{twoFA ? "Activée" : "Désactivée"}</div>
+              </div>
+              <div style={{ width: 42, height: 24, borderRadius: 12, background: twoFA ? COLORS.green : "#CBD5E1", position: "relative", flexShrink: 0, transition: "background 0.2s" }}>
+                <div style={{ width: 18, height: 18, borderRadius: "50%", background: COLORS.white, position: "absolute", top: 3, left: twoFA ? 21 : 3, transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => setSettingsModal(null)} style={{ background: COLORS.cream, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+              <button onClick={handleSaveSecurite} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Enregistrer</button>
             </div>
           </div>
         </div>
