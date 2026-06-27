@@ -9,9 +9,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const handleLogin = () => {
-    if (email === "admin@btec.bj" && password === "admin123") {
+    if (email === "admin@btec.bj" && password === "BTEC6267") {
       router.push("/admin");
-    } else if (email === "client@btec.bj" && password === "client123") {
+    } else if (email === "client@btec.bj" && password === "client6267") {
       router.push("/dashboard");
     } else {
       setError("Email ou mot de passe incorrect.");
@@ -59,11 +59,6 @@ export default function LoginPage() {
           style={{ width: "100%", padding: "13px", background: "#0B1F3A", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 20 }}>
           Se connecter
         </button>
-        <div style={{ background: "#F7F4EE", borderRadius: 10, padding: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#64748B", marginBottom: 8 }}>🔑 Comptes de démonstration</div>
-          <div style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}>👤 <b>Admin :</b> admin@btec.bj / admin123</div>
-          <div style={{ fontSize: 12, color: "#64748B" }}>🏢 <b>Client :</b> client@btec.bj / client123</div>
-        </div>
         <div style={{ textAlign: "center", marginTop: 20, fontSize: 12, color: "#94A3B8" }}>
           🔒 Connexion sécurisée SSL
         </div>
