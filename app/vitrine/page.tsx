@@ -2,13 +2,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const COLORS = {
-  navy: "#0B1F3A", navyLight: "#1A3A5C",
-  gold: "#C9A84C", cream: "#F7F4EE", white: "#FFFFFF",
-  slate: "#64748B", slateLight: "#94A3B8",
-  green: "#16A34A", greenLight: "#DCFCE7",
-  blue: "#2563EB", blueLight: "#DBEAFE",
-  gray: "#F1F5F9",
+const C = {
+  // Primaires
+  emerald:      "#0D6B4E",   // vert émeraude — couleur comptable/finance
+  emeraldLight: "#E6F4EF",   // vert très clair pour fonds de section
+  emeraldMid:   "#1A8A63",   // hover boutons
+  // Neutres
+  ink:          "#0F2138",   // texte principal (quasi-noir bleuté)
+  slate:        "#4A6072",   // texte secondaire
+  mist:         "#94A8B8",   // texte tertiaire
+  snow:         "#FFFFFF",   // fond blanc
+  cloud:        "#F0F4F8",   // fond gris-bleu clair
+  border:       "#D8E4EE",   // bordures
+  // Accent
+  gold:         "#C9A84C",   // or brand
+  goldLight:    "#FBF4E3",   // fond or clair
 };
 
 export default function VitrinePage() {
@@ -52,73 +60,140 @@ export default function VitrinePage() {
     { q: "Y a-t-il une période d'essai ?", r: "Oui, 30 jours d'essai gratuit sans engagement." },
   ];
 
-  return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: COLORS.white, color: COLORS.navy }}>
+  const inputSt: React.CSSProperties = {
+    padding: "12px 14px", borderRadius: 10,
+    border: `1.5px solid ${C.border}`, fontSize: 13,
+    outline: "none", background: C.snow, color: C.ink,
+    width: "100%", boxSizing: "border-box",
+  };
 
-      {/* NAVBAR */}
-      <nav style={{ background: COLORS.navy, padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 }}>
+  return (
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: C.snow, color: C.ink }}>
+
+      {/* ── NAVBAR ─────────────────────────────────────────────────────── */}
+      <nav style={{
+        background: C.snow,
+        borderBottom: `1px solid ${C.border}`,
+        padding: "0 32px", height: 64,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        position: "sticky", top: 0, zIndex: 100,
+        boxShadow: "0 1px 8px rgba(15,33,56,0.06)",
+      }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: COLORS.gold, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 16, color: COLORS.navy }}>B</div>
-          <span style={{ color: COLORS.white, fontWeight: 800, fontSize: 16 }}>BTEC COMPTA</span>
+          <div style={{
+            width: 36, height: 36, background: C.emerald, borderRadius: 9,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontWeight: 900, fontSize: 18, color: C.snow,
+          }}>B</div>
+          <span style={{ color: C.ink, fontWeight: 800, fontSize: 17, letterSpacing: "-0.02em" }}>BTEC COMPTA</span>
         </div>
-        <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-          <span onClick={() => router.push("/fonctionnalites")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>Fonctionnalités</span>
-          <span onClick={() => router.push("/tarifs")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>Tarifs</span>
-          <span onClick={() => router.push("/contact")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>Contact</span>
-          <span onClick={() => router.push("/apropos")} style={{ color: COLORS.slateLight, fontSize: 13, cursor: "pointer" }}>À Propos</span>
-          <button onClick={() => router.push("/login")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Connexion</button>
+        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+          {["Fonctionnalités", "Tarifs", "Contact", "À Propos"].map((label, i) => (
+            <span key={i} onClick={() => router.push("/" + label.toLowerCase().replace(" ", "").replace("à", "a"))}
+              style={{ color: C.slate, fontSize: 13, cursor: "pointer", fontWeight: 500 }}>
+              {label}
+            </span>
+          ))}
+          <button onClick={() => router.push("/login")} style={{
+            background: C.emerald, color: C.snow, border: "none",
+            borderRadius: 8, padding: "9px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer",
+          }}>Connexion</button>
         </div>
       </nav>
 
-      {/* HERO */}
-      <section style={{ background: `linear-gradient(135deg, ${COLORS.navy} 0%, ${COLORS.navy} 100%)`, padding: "80px 24px", textAlign: "center" }}>
-        <div style={{ maxWidth: 700, margin: "0 auto" }}>
-          <div style={{ display: "inline-block", background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 20, padding: "6px 16px", fontSize: 12, color: COLORS.gold, marginBottom: 20, fontWeight: 600 }}>
+      {/* ── HERO ───────────────────────────────────────────────────────── */}
+      <section style={{
+        background: `linear-gradient(135deg, #FFFFFF 0%, #EBF5F0 60%, #D0EBE1 100%)`,
+        padding: "90px 24px 80px",
+        textAlign: "center",
+        borderBottom: `1px solid ${C.border}`,
+      }}>
+        <div style={{ maxWidth: 740, margin: "0 auto" }}>
+          {/* Badge */}
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: C.emeraldLight, border: `1px solid ${C.emerald}30`,
+            borderRadius: 20, padding: "6px 16px", fontSize: 12,
+            color: C.emerald, marginBottom: 24, fontWeight: 700,
+          }}>
             🚀 Plateforme SaaS Comptable & Financière
           </div>
-          <h1 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 900, color: COLORS.white, lineHeight: 1.2, marginBottom: 20 }}>
-            Nous gérons la comptabilité de nos entreprises clientes en toute simplicité
+
+          <h1 style={{
+            fontSize: "clamp(30px, 5vw, 52px)", fontWeight: 900,
+            color: C.ink, lineHeight: 1.15, marginBottom: 20,
+            letterSpacing: "-0.03em",
+          }}>
+            Nous gérons la comptabilité<br />
+            de nos entreprises clientes<br />
+            <span style={{ color: C.emerald }}>en toute simplicité</span>
           </h1>
-          <p style={{ fontSize: 16, color: COLORS.slateLight, marginBottom: 32, lineHeight: 1.7 }}>
-            BTEC Compta est la plateforme dédiée au Département de Comptabilité de notre Cabinet. Elle permet de centraliser, en un seul espace sécurisé,la Gestion Comptable de l'ensemble de notre portefeuille d'entreprises clientes.
+
+          <p style={{ fontSize: 16, color: C.slate, marginBottom: 36, lineHeight: 1.75, maxWidth: 600, margin: "0 auto 36px" }}>
+            BTEC Compta est la plateforme dédiée au Département de Comptabilité de notre Cabinet.
+            Elle centralise, en un seul espace sécurisé, la gestion comptable de l'ensemble de notre portefeuille d'entreprises clientes.
           </p>
+
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => router.push("/login")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 10, padding: "14px 28px", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>
+            <button onClick={() => router.push("/login")} style={{
+              background: C.emerald, color: C.snow, border: "none",
+              borderRadius: 10, padding: "15px 32px", fontWeight: 800,
+              fontSize: 15, cursor: "pointer",
+              boxShadow: `0 4px 20px ${C.emerald}40`,
+            }}>
               Commencer gratuitement →
             </button>
-            <button onClick={() => router.push("/login")} style={{ background: "transparent", color: COLORS.white, border: "2px solid rgba(255,255,255,0.3)", borderRadius: 10, padding: "14px 28px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
+            <button onClick={() => router.push("/login")} style={{
+              background: C.snow, color: C.ink,
+              border: `2px solid ${C.border}`,
+              borderRadius: 10, padding: "15px 32px", fontWeight: 700,
+              fontSize: 15, cursor: "pointer",
+            }}>
               Voir la démo
             </button>
           </div>
-          <div style={{ marginTop: 40, display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
-            {[{ val: "500+", label: "Entreprises" }, { val: "98%", label: "Satisfaction" }, { val: "30j", label: "Essai gratuit" }].map((s, i) => (
+
+          {/* Stats */}
+          <div style={{ marginTop: 56, display: "flex", justifyContent: "center", gap: 48, flexWrap: "wrap" }}>
+            {[
+              { val: "500+", label: "Entreprises" },
+              { val: "98%", label: "Satisfaction" },
+              { val: "30j", label: "Essai gratuit" },
+            ].map((s, i) => (
               <div key={i} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: COLORS.gold }}>{s.val}</div>
-                <div style={{ fontSize: 12, color: COLORS.slateLight }}>{s.label}</div>
+                <div style={{ fontSize: 32, fontWeight: 900, color: C.emerald, letterSpacing: "-0.03em" }}>{s.val}</div>
+                <div style={{ fontSize: 12, color: C.mist, fontWeight: 600, marginTop: 2 }}>{s.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* PRÉSENTATION DE LA PLATEFORME */}
-      <section style={{ padding: "60px 24px", background: COLORS.white }}>
+      {/* ── PRÉSENTATION ────────────────────────────────────────────────── */}
+      <section style={{ padding: "72px 24px", background: C.snow }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 8 }}>Notre Plateforme</h2>
-          <p style={{ textAlign: "center", color: COLORS.slate, marginBottom: 40, fontSize: 14 }}>Une solution complète pour les cabinets comptables modernes</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24, alignItems: "center" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.emerald, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>Notre plateforme</div>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: C.ink, margin: 0 }}>Une solution complète pour les cabinets modernes</h2>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 32, alignItems: "center" }}>
             <div>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: COLORS.navy, marginBottom: 16 }}>Pourquoi BTEC Bénin ?</h3>
-              <p style={{ fontSize: 14, color: COLORS.slate, lineHeight: 1.8, marginBottom: 16 }}>
-                BTEC Bénin est une plateforme SaaS conçue spécialement pour les cabinets comptables et leurs entreprises clientes au Bénin et en Afrique de l'Ouest.
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: C.ink, marginBottom: 14 }}>Pourquoi BTEC Bénin ?</h3>
+              <p style={{ fontSize: 14, color: C.slate, lineHeight: 1.8, marginBottom: 14 }}>
+                Conçue spécialement pour les cabinets comptables et leurs entreprises clientes au Bénin et en Afrique de l'Ouest.
               </p>
-              <p style={{ fontSize: 14, color: COLORS.slate, lineHeight: 1.8, marginBottom: 20 }}>
-                Grâce à notre système multi-entreprises, un cabinet peut gérer la comptabilité de plusieurs clients depuis un seul tableau de bord centralisé.
+              <p style={{ fontSize: 14, color: C.slate, lineHeight: 1.8, marginBottom: 22 }}>
+                Notre système multi-entreprises permet de gérer la comptabilité de plusieurs clients depuis un seul tableau de bord centralisé.
               </p>
               {["Accès sécurisé 24h/24 et 7j/7", "Interface intuitive et moderne", "Conformité aux normes SYSCOHADA", "Support technique dédié"].map((item, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                  <span style={{ color: COLORS.green, fontWeight: 700, fontSize: 16 }}>✓</span>
-                  <span style={{ fontSize: 14, color: COLORS.slate }}>{item}</span>
+                  <span style={{
+                    width: 20, height: 20, borderRadius: "50%",
+                    background: C.emeraldLight, display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    fontSize: 11, color: C.emerald, fontWeight: 900, flexShrink: 0,
+                  }}>✓</span>
+                  <span style={{ fontSize: 14, color: C.slate }}>{item}</span>
                 </div>
               ))}
             </div>
@@ -129,10 +204,13 @@ export default function VitrinePage() {
                 { icon: "📊", val: "10k+", label: "Rapports" },
                 { icon: "⭐", val: "98%", label: "Satisfaction" },
               ].map((s, i) => (
-                <div key={i} style={{ background: COLORS.gray, borderRadius: 12, padding: 20, textAlign: "center" }}>
+                <div key={i} style={{
+                  background: C.cloud, borderRadius: 14, padding: 20,
+                  textAlign: "center", border: `1px solid ${C.border}`,
+                }}>
                   <div style={{ fontSize: 28, marginBottom: 8 }}>{s.icon}</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: COLORS.navy }}>{s.val}</div>
-                  <div style={{ fontSize: 12, color: COLORS.slate }}>{s.label}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: C.emerald }}>{s.val}</div>
+                  <div style={{ fontSize: 12, color: C.slate }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -140,79 +218,135 @@ export default function VitrinePage() {
         </div>
       </section>
 
-      {/* FONCTIONNALITÉS */}
-      <section style={{ padding: "60px 24px", background: COLORS.gray }}>
+      {/* ── FONCTIONNALITÉS ─────────────────────────────────────────────── */}
+      <section style={{ padding: "72px 24px", background: C.cloud }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 8 }}>Fonctionnalités principales</h2>
-          <p style={{ textAlign: "center", color: COLORS.slate, marginBottom: 40, fontSize: 14 }}>Tout ce dont vous avez besoin en un seul endroit</p>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.emerald, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>Fonctionnalités</div>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: C.ink, margin: 0 }}>Tout ce dont vous avez besoin en un seul endroit</h2>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
             {fonctionnalites.map((f, i) => (
-              <div key={i} style={{ background: COLORS.white, borderRadius: 14, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>{f.icon}</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.navy, marginBottom: 8 }}>{f.titre}</div>
-                <div style={{ fontSize: 13, color: COLORS.slate, lineHeight: 1.6 }}>{f.desc}</div>
+              <div key={i} style={{
+                background: C.snow, borderRadius: 14, padding: 22,
+                boxShadow: "0 1px 6px rgba(15,33,56,0.06)",
+                border: `1px solid ${C.border}`,
+                borderTop: `3px solid ${C.emerald}`,
+              }}>
+                <div style={{ fontSize: 30, marginBottom: 12 }}>{f.icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginBottom: 8 }}>{f.titre}</div>
+                <div style={{ fontSize: 13, color: C.slate, lineHeight: 1.65 }}>{f.desc}</div>
               </div>
             ))}
           </div>
-          <div style={{ textAlign: "center", marginTop: 24 }}>
-            <button onClick={() => router.push("/fonctionnalites")} style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 10, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+          <div style={{ textAlign: "center", marginTop: 28 }}>
+            <button onClick={() => router.push("/fonctionnalites")} style={{
+              background: C.ink, color: C.snow, border: "none",
+              borderRadius: 10, padding: "12px 26px", fontWeight: 700, fontSize: 14, cursor: "pointer",
+            }}>
               Voir toutes les fonctionnalités →
             </button>
           </div>
         </div>
       </section>
 
-      {/* AVANTAGES */}
-      <section style={{ padding: "60px 24px", background: COLORS.white }}>
+      {/* ── AVANTAGES ────────────────────────────────────────────────────── */}
+      <section style={{ padding: "72px 24px", background: C.snow }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 40 }}>Pourquoi choisir BTEC ?</h2>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.emerald, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>Nos atouts</div>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: C.ink, margin: 0 }}>Pourquoi choisir BTEC ?</h2>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
             {avantages.map((a, i) => (
-              <div key={i} style={{ textAlign: "center", padding: 20, background: COLORS.gray, borderRadius: 14 }}>
+              <div key={i} style={{
+                textAlign: "center", padding: 24,
+                background: C.emeraldLight,
+                borderRadius: 14, border: `1px solid ${C.emerald}20`,
+              }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>{a.icon}</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.navy, marginBottom: 6 }}>{a.titre}</div>
-                <div style={{ fontSize: 13, color: COLORS.slate }}>{a.desc}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginBottom: 6 }}>{a.titre}</div>
+                <div style={{ fontSize: 13, color: C.slate }}>{a.desc}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* TÉMOIGNAGES */}
-      <section style={{ padding: "60px 24px", background: COLORS.gray }}>
+      {/* ── TÉMOIGNAGES ─────────────────────────────────────────────────── */}
+      <section style={{ padding: "72px 24px", background: C.cloud }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 40 }}>Ce que disent nos clients</h2>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.emerald, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>Témoignages</div>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: C.ink, margin: 0 }}>Ce que disent nos clients</h2>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
             {temoignages.map((t, i) => (
-              <div key={i} style={{ background: COLORS.white, borderRadius: 14, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-                <div style={{ fontSize: 24, color: COLORS.gold, marginBottom: 12 }}>❝</div>
-                <p style={{ fontSize: 13, color: COLORS.slate, lineHeight: 1.7, marginBottom: 16 }}>{t.texte}</p>
-                <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 13 }}>{t.nom}</div>
-                <div style={{ fontSize: 11, color: COLORS.slateLight }}>{t.poste}</div>
+              <div key={i} style={{
+                background: C.snow, borderRadius: 14, padding: 22,
+                boxShadow: "0 1px 6px rgba(15,33,56,0.06)",
+                border: `1px solid ${C.border}`,
+              }}>
+                <div style={{ fontSize: 28, color: C.emerald, marginBottom: 12, fontWeight: 900 }}>❝</div>
+                <p style={{ fontSize: 13, color: C.slate, lineHeight: 1.75, marginBottom: 16 }}>{t.texte}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: C.emerald, display: "flex", alignItems: "center",
+                    justifyContent: "center", color: C.snow, fontWeight: 800, fontSize: 14, flexShrink: 0,
+                  }}>{t.nom[0]}</div>
+                  <div>
+                    <div style={{ fontWeight: 700, color: C.ink, fontSize: 13 }}>{t.nom}</div>
+                    <div style={{ fontSize: 11, color: C.mist }}>{t.poste}</div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* TARIFS */}
-      <section style={{ padding: "60px 24px", background: COLORS.white }}>
+      {/* ── TARIFS ──────────────────────────────────────────────────────── */}
+      <section style={{ padding: "72px 24px", background: C.snow }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 8 }}>Nos tarifs</h2>
-          <p style={{ textAlign: "center", color: COLORS.slate, marginBottom: 40, fontSize: 14 }}>30 jours d'essai gratuit · Sans engagement</p>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.emerald, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>Tarification</div>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: C.ink, marginBottom: 6 }}>Nos tarifs</h2>
+            <p style={{ fontSize: 14, color: C.slate, margin: 0 }}>30 jours d'essai gratuit · Sans engagement</p>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
             {tarifs.map((t, i) => (
-              <div key={i} style={{ background: t.recommande ? COLORS.navy : COLORS.white, borderRadius: 16, padding: 24, boxShadow: t.recommande ? "0 8px 24px rgba(11,31,58,0.3)" : "0 2px 8px rgba(0,0,0,0.06)", border: t.recommande ? "none" : "1px solid #E2E8F0", position: "relative" }}>
-                {t.recommande && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: COLORS.gold, color: COLORS.navy, fontSize: 11, fontWeight: 800, padding: "4px 12px", borderRadius: 20, whiteSpace: "nowrap" }}>⭐ RECOMMANDÉ</div>}
-                <div style={{ fontSize: 16, fontWeight: 800, color: t.recommande ? COLORS.white : COLORS.navy, marginBottom: 4 }}>{t.nom}</div>
-                <div style={{ fontSize: 12, color: t.recommande ? COLORS.slateLight : COLORS.slate, marginBottom: 16 }}>{t.desc}</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: t.recommande ? COLORS.gold : COLORS.navy, marginBottom: 16 }}>{t.prix} <span style={{ fontSize: 13, fontWeight: 400 }}>FCFA/mois</span></div>
+              <div key={i} style={{
+                background: t.recommande ? C.emerald : C.snow,
+                borderRadius: 16, padding: 28,
+                boxShadow: t.recommande ? `0 12px 40px ${C.emerald}35` : "0 2px 8px rgba(15,33,56,0.06)",
+                border: t.recommande ? "none" : `1px solid ${C.border}`,
+                position: "relative",
+              }}>
+                {t.recommande && (
+                  <div style={{
+                    position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
+                    background: C.gold, color: C.ink, fontSize: 11, fontWeight: 800,
+                    padding: "4px 14px", borderRadius: 20, whiteSpace: "nowrap",
+                  }}>⭐ RECOMMANDÉ</div>
+                )}
+                <div style={{ fontSize: 16, fontWeight: 800, color: t.recommande ? C.snow : C.ink, marginBottom: 4 }}>{t.nom}</div>
+                <div style={{ fontSize: 12, color: t.recommande ? "rgba(255,255,255,0.65)" : C.slate, marginBottom: 18 }}>{t.desc}</div>
+                <div style={{ fontSize: 30, fontWeight: 900, color: t.recommande ? C.snow : C.emerald, marginBottom: 18 }}>
+                  {t.prix} <span style={{ fontSize: 13, fontWeight: 400 }}>FCFA/mois</span>
+                </div>
                 {t.features.map((f, j) => (
-                  <div key={j} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 13, color: t.recommande ? COLORS.slateLight : COLORS.slate }}>
-                    <span style={{ color: COLORS.green }}>✓</span> {f}
+                  <div key={j} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9, fontSize: 13, color: t.recommande ? "rgba(255,255,255,0.85)" : C.slate }}>
+                    <span style={{ color: t.recommande ? C.snow : C.emerald, fontWeight: 700 }}>✓</span> {f}
                   </div>
                 ))}
-                <button onClick={() => router.push("/login")} style={{ width: "100%", marginTop: 16, background: t.recommande ? COLORS.gold : COLORS.navy, color: t.recommande ? COLORS.navy : COLORS.white, border: "none", borderRadius: 10, padding: "12px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                <button onClick={() => router.push("/login")} style={{
+                  width: "100%", marginTop: 20,
+                  background: t.recommande ? C.snow : C.emerald,
+                  color: t.recommande ? C.emerald : C.snow,
+                  border: "none", borderRadius: 10, padding: "13px",
+                  fontWeight: 800, fontSize: 14, cursor: "pointer",
+                }}>
                   Commencer →
                 </button>
               </div>
@@ -221,56 +355,95 @@ export default function VitrinePage() {
         </div>
       </section>
 
-      {/* FAQ */}
-      <section style={{ padding: "60px 24px", background: COLORS.gray }}>
+      {/* ── FAQ ─────────────────────────────────────────────────────────── */}
+      <section style={{ padding: "72px 24px", background: C.cloud }}>
         <div style={{ maxWidth: 700, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 40 }}>Questions fréquentes</h2>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.emerald, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>FAQ</div>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: C.ink, margin: 0 }}>Questions fréquentes</h2>
+          </div>
           {faqs.map((f, i) => (
-            <div key={i} style={{ background: COLORS.white, borderRadius: 12, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
-              <div onClick={() => setFaqOpen(faqOpen === i ? null : i)} style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy }}>{f.q}</span>
-                <span style={{ color: COLORS.gold, fontSize: 18 }}>{faqOpen === i ? "−" : "+"}</span>
+            <div key={i} style={{
+              background: C.snow, borderRadius: 12, marginBottom: 10,
+              overflow: "hidden", border: `1px solid ${C.border}`,
+            }}>
+              <div onClick={() => setFaqOpen(faqOpen === i ? null : i)} style={{
+                padding: "16px 20px", display: "flex", justifyContent: "space-between",
+                alignItems: "center", cursor: "pointer",
+              }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: C.ink }}>{f.q}</span>
+                <span style={{
+                  width: 24, height: 24, borderRadius: "50%",
+                  background: faqOpen === i ? C.emerald : C.emeraldLight,
+                  color: faqOpen === i ? C.snow : C.emerald,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 16, fontWeight: 700, flexShrink: 0,
+                }}>
+                  {faqOpen === i ? "−" : "+"}
+                </span>
               </div>
-              {faqOpen === i && <div style={{ padding: "0 20px 16px", fontSize: 13, color: COLORS.slate, lineHeight: 1.7 }}>{f.r}</div>}
+              {faqOpen === i && (
+                <div style={{ padding: "0 20px 16px", fontSize: 13, color: C.slate, lineHeight: 1.75 }}>{f.r}</div>
+              )}
             </div>
           ))}
         </div>
       </section>
 
-      {/* FORMULAIRE DE CONTACT */}
-      <section style={{ padding: "60px 24px", background: COLORS.white }}>
+      {/* ── CONTACT ─────────────────────────────────────────────────────── */}
+      <section style={{ padding: "72px 24px", background: C.snow }}>
         <div style={{ maxWidth: 700, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: COLORS.navy, marginBottom: 8 }}>Contactez-nous</h2>
-          <p style={{ textAlign: "center", color: COLORS.slate, marginBottom: 40, fontSize: 14 }}>Notre équipe vous répond dans les 24h</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 32 }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.emerald, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>Contact</div>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: C.ink, marginBottom: 6 }}>Contactez-nous</h2>
+            <p style={{ fontSize: 14, color: C.slate, margin: 0 }}>Notre équipe vous répond dans les 24h</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 32 }}>
             {[
               { icon: "📧", label: "Email", val: "contact@btecbenin.com" },
               { icon: "📞", label: "WhatsApp", val: "+229 01 48 55 26 07" },
               { icon: "📍", label: "Adresse", val: "Mènontin, Cotonou" },
             ].map((c, i) => (
-              <div key={i} style={{ textAlign: "center", background: COLORS.gray, borderRadius: 12, padding: 16 }}>
+              <div key={i} style={{
+                textAlign: "center", background: C.emeraldLight,
+                borderRadius: 12, padding: 16, border: `1px solid ${C.emerald}20`,
+              }}>
                 <div style={{ fontSize: 24, marginBottom: 6 }}>{c.icon}</div>
-                <div style={{ fontSize: 11, color: COLORS.slate, marginBottom: 4 }}>{c.label}</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy }}>{c.val}</div>
+                <div style={{ fontSize: 11, color: C.mist, marginBottom: 4 }}>{c.label}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.ink }}>{c.val}</div>
               </div>
             ))}
           </div>
           {envoye ? (
-            <div style={{ textAlign: "center", padding: "40px 0", background: COLORS.gray, borderRadius: 14 }}>
+            <div style={{
+              textAlign: "center", padding: "48px 0",
+              background: C.emeraldLight, borderRadius: 14,
+              border: `1px solid ${C.emerald}30`,
+            }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy }}>Message envoyé !</div>
-              <div style={{ fontSize: 13, color: COLORS.slate, marginTop: 8 }}>Nous vous répondrons dans les 24 heures.</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: C.ink }}>Message envoyé !</div>
+              <div style={{ fontSize: 13, color: C.slate, marginTop: 8 }}>Nous vous répondrons dans les 24 heures.</div>
             </div>
           ) : (
-            <div style={{ background: COLORS.gray, borderRadius: 14, padding: 24 }}>
+            <div style={{
+              background: C.cloud, borderRadius: 14, padding: 24,
+              border: `1px solid ${C.border}`,
+            }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <input value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} placeholder="Votre nom" style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }} />
-                <input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="Votre email" style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }} />
-                <textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder="Votre message..." rows={4} style={{ padding: "12px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", resize: "none" }} />
-                <button onClick={() => { if (form.nom && form.email && form.message) setEnvoye(true); }} style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 10, padding: "13px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                <input value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} placeholder="Votre nom" style={inputSt} />
+                <input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="Votre email" style={inputSt} />
+                <textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder="Votre message..." rows={4} style={{ ...inputSt, resize: "none" }} />
+                <button onClick={() => { if (form.nom && form.email && form.message) setEnvoye(true); }} style={{
+                  background: C.emerald, color: C.snow, border: "none",
+                  borderRadius: 10, padding: "13px", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                }}>
                   Envoyer le message
                 </button>
-                <a href="https://wa.me/22901485526" style={{ display: "block", textAlign: "center", background: "#25D366", color: COLORS.white, borderRadius: 10, padding: "13px", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                <a href="https://wa.me/22901485526" style={{
+                  display: "block", textAlign: "center", background: "#25D366",
+                  color: C.snow, borderRadius: 10, padding: "13px",
+                  fontWeight: 700, fontSize: 14, textDecoration: "none",
+                }}>
                   💬 Contacter via WhatsApp
                 </a>
               </div>
@@ -279,32 +452,40 @@ export default function VitrinePage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ background: COLORS.navy, padding: "40px 24px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 24 }}>
+      {/* ── FOOTER ──────────────────────────────────────────────────────── */}
+      <footer style={{ background: C.ink, padding: "48px 24px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 28 }}>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 32, height: 32, background: COLORS.gold, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 16, color: COLORS.navy }}>B</div>
-              <span style={{ color: COLORS.white, fontWeight: 800, fontSize: 16 }}>BTEC Bénin</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{
+                width: 36, height: 36, background: C.emerald, borderRadius: 9,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontWeight: 900, fontSize: 18, color: C.snow,
+              }}>B</div>
+              <span style={{ color: C.snow, fontWeight: 800, fontSize: 16 }}>BTEC Bénin</span>
             </div>
-            <p style={{ fontSize: 12, color: COLORS.slateLight, maxWidth: 220, lineHeight: 1.7 }}>Plateforme SaaS de gestion comptable et financière pour les cabinets du Bénin.</p>
+            <p style={{ fontSize: 12, color: C.mist, maxWidth: 220, lineHeight: 1.75 }}>
+              Plateforme SaaS de gestion comptable et financière pour les cabinets du Bénin.
+            </p>
           </div>
           <div>
-            <div style={{ color: COLORS.white, fontWeight: 700, fontSize: 13, marginBottom: 12 }}>Liens rapides</div>
-            <div onClick={() => router.push("/fonctionnalites")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Fonctionnalités</div>
-            <div onClick={() => router.push("/tarifs")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Tarifs</div>
-            <div onClick={() => router.push("/contact")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Contact</div>
-            <div onClick={() => router.push("/apropos")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>À Propos</div>
-            <div onClick={() => router.push("/login")} style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 8, cursor: "pointer" }}>Connexion</div>
+            <div style={{ color: C.snow, fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Liens rapides</div>
+            {["Fonctionnalités", "Tarifs", "Contact", "À Propos", "Connexion"].map((l, i) => (
+              <div key={i} onClick={() => router.push("/" + l.toLowerCase().replace(" ", "").replace("à", "a"))}
+                style={{ color: C.mist, fontSize: 12, marginBottom: 9, cursor: "pointer" }}>{l}</div>
+            ))}
           </div>
           <div>
-            <div style={{ color: COLORS.white, fontWeight: 700, fontSize: 13, marginBottom: 12 }}>Contact</div>
-            <div style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 6 }}>📧 contact@btecbenin.com</div>
-            <div style={{ color: COLORS.slateLight, fontSize: 12, marginBottom: 6 }}>📞 +229 01 48 55 26 07</div>
-            <div style={{ color: COLORS.slateLight, fontSize: 12 }}>📍 Mènontin, Cotonou</div>
+            <div style={{ color: C.snow, fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Contact</div>
+            <div style={{ color: C.mist, fontSize: 12, marginBottom: 8 }}>📧 contact@btecbenin.com</div>
+            <div style={{ color: C.mist, fontSize: 12, marginBottom: 8 }}>📞 +229 01 48 55 26 07</div>
+            <div style={{ color: C.mist, fontSize: 12 }}>📍 Mènontin, Cotonou</div>
           </div>
         </div>
-        <div style={{ textAlign: "center", marginTop: 32, color: COLORS.slateLight, fontSize: 12, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
+        <div style={{
+          textAlign: "center", marginTop: 36, color: C.mist, fontSize: 12,
+          borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 20,
+        }}>
           © 2025 BTEC Bénin. Tous droits réservés.
         </div>
       </footer>
