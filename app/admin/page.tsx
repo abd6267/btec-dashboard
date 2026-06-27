@@ -22,10 +22,15 @@ const NAV_ADMIN = [
   { id: "parametres", icon: "⚙", label: "Paramètres", sub: ["Profil", "Sécurité"] },
 ];
 
+const TYPES_ENTREPRISE = ["SARL", "SA", "SAS", "EURL", "GIE", "Association", "Autre"];
+const SECTEURS = ["Commerce", "Services", "Industrie", "Agriculture", "BTP", "Santé", "Éducation", "Transport", "Autre"];
+const ROLES = ["Administrateur", "Comptable", "Secrétaire caissière"];
+
 const ENTREPRISES_DATA = [
-  { id: 1, nom: "SARL AKPLA Commerce", secteur: "Commerce", statut: "actif", users: 3, abonnement: "Business" },
-  { id: 2, nom: "BENIN TECH Services", secteur: "Services", statut: "actif", users: 2, abonnement: "Starter" },
-  { id: 3, nom: "INDUSTRIE ZINSOU", secteur: "Industrie", statut: "actif", users: 4, abonnement: "Enterprise" },
+  { id: 1, nom: "SARL AKPLA Commerce", type: "SARL", secteur: "Commerce", rccm: "RB/COT/24 A 12345", ifu: "123456789", telephone: "+229 97 00 00 01", localisation: "Cotonou, Mènontin", statut: "actif", users: 3, abonnement: "Business" },
+  { id: 2, nom: "BENIN TECH Services", type: "SAS", secteur: "Services", rccm: "RB/COT/23 A 67890", ifu: "987654321", telephone: "+229 97 00 00 02", localisation: "Cotonou, Akpakpa", statut: "actif", users: 2, abonnement: "Starter" },
+  { id: 3, nom: "INDUSTRIE ZINSOU", type: "SA", secteur: "Industrie", rccm: "RB/COT/22 A 11111", ifu: "111222333", telephone: "+229 97 00 00 03", localisation: "Porto-Novo", statut: "actif", users: 4, abonnement: "Enterprise" },
+  { id: 4, nom: "GIE ALAFIA", type: "GIE", secteur: "Agriculture", rccm: "RB/COT/21 A 22222", ifu: "444555666", telephone: "+229 97 00 00 04", localisation: "Parakou", statut: "suspendu", users: 1, abonnement: "Starter" },
 ];
 
 const COMPTABLES_DATA = [
@@ -35,38 +40,30 @@ const COMPTABLES_DATA = [
 ];
 
 const UTILISATEURS_DATA = [
-  { id: 1, nom: "Kofi Mensah", email: "kofi@akpla.bj", entreprise: "SARL AKPLA", role: "Admin", statut: "actif" },
-  { id: 2, nom: "Aminata Diallo", email: "aminata@benintech.bj", entreprise: "BENIN TECH", role: "Lecteur", statut: "actif" },
-  { id: 3, nom: "Jean Zinsou", email: "jean@zinsou.bj", entreprise: "INDUSTRIE ZINSOU", role: "Admin", statut: "actif" },
+  { id: 1, nom: "Kofi Mensah", email: "kofi@akpla.bj", entreprise: "SARL AKPLA", role: "Administrateur", statut: "actif" },
+  { id: 2, nom: "Aminata Diallo", email: "aminata@benintech.bj", entreprise: "BENIN TECH", role: "Comptable", statut: "actif" },
+  { id: 3, nom: "Jean Zinsou", email: "jean@zinsou.bj", entreprise: "INDUSTRIE ZINSOU", role: "Administrateur", statut: "actif" },
+  { id: 4, nom: "Marie Alafia", email: "marie@alafia.bj", entreprise: "GIE ALAFIA", role: "Secrétaire caissière", statut: "suspendu" },
 ];
 
 const ABONNEMENTS = [
   { entreprise: "SARL AKPLA Commerce", plan: "Business", prix: "35 000", statut: "actif", renouvellement: "01 Jul 2025" },
   { entreprise: "BENIN TECH Services", plan: "Starter", prix: "15 000", statut: "actif", renouvellement: "15 Jul 2025" },
   { entreprise: "INDUSTRIE ZINSOU", plan: "Enterprise", prix: "75 000", statut: "actif", renouvellement: "30 Jun 2025" },
+  { entreprise: "GIE ALAFIA", plan: "Starter", prix: "15 000", statut: "suspendu", renouvellement: "01 Jun 2025" },
 ];
 
 const PAIEMENTS = [
   { entreprise: "INDUSTRIE ZINSOU", montant: "75 000", date: "01 Jun 2025", statut: "payé" },
   { entreprise: "SARL AKPLA Commerce", montant: "35 000", date: "01 Jun 2025", statut: "payé" },
   { entreprise: "BENIN TECH Services", montant: "15 000", date: "15 Mai 2025", statut: "payé" },
+  { entreprise: "GIE ALAFIA", montant: "15 000", date: "01 Mai 2025", statut: "impayé" },
 ];
 
-// Initial permissions state
-const INITIAL_PERMISSIONS = [
-  { action: "Voir les rapports",       admin: true,  comptable: true,  lecteur: true,  invite: false },
-  { action: "Créer des factures",      admin: true,  comptable: true,  lecteur: false, invite: false },
-  { action: "Gérer les utilisateurs",  admin: true,  comptable: false, lecteur: false, invite: false },
-  { action: "Déposer des documents",   admin: true,  comptable: true,  lecteur: false, invite: false },
-  { action: "Voir la trésorerie",      admin: true,  comptable: true,  lecteur: true,  invite: false },
-  { action: "Modifier les paramètres", admin: true,  comptable: false, lecteur: false, invite: false },
-];
-
-// MODAL COMPONENT
 function Modal({ titre, onClose, children }: { titre: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <div style={{ background: COLORS.white, borderRadius: 16, padding: 24, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}>
+      <div style={{ background: COLORS.white, borderRadius: 16, padding: 24, width: "100%", maxWidth: 500, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy }}>{titre}</div>
           <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: COLORS.slate }}>✕</button>
@@ -88,90 +85,78 @@ const btnStyle = (bg: string, color: string): React.CSSProperties => ({
   borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
 });
 
-function SupervisionPage() {
-  const stats = [
-    { label: "Entreprises", value: "4", icon: "🏢", color: COLORS.blue },
-    { label: "Utilisateurs", value: "10", icon: "👥", color: COLORS.green },
-    { label: "Comptables", value: "3", icon: "👨‍💼", color: COLORS.gold },
-    { label: "Abonnements actifs", value: "3", icon: "✅", color: COLORS.green },
-    { label: "Revenu mensuel", value: "125 000", icon: "💰", color: COLORS.navy },
-    { label: "Tickets ouverts", value: "2", icon: "🎫", color: COLORS.orange },
-  ];
-  return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
-        {stats.map((s, i) => (
-          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", borderLeft: `4px solid ${s.color}` }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontSize: 12, color: COLORS.slate }}>{s.label}</span>
-              <span style={{ fontSize: 20 }}>{s.icon}</span>
-            </div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: COLORS.navy }}>{s.value}</div>
-          </div>
-        ))}
-      </div>
-      <div style={{ background: COLORS.white, borderRadius: 14, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-        <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14, marginBottom: 12 }}>Activité récente</div>
-        {[
-          { action: "Nouvelle entreprise créée", detail: "SARL AKPLA Commerce", time: "Il y a 2h" },
-          { action: "Document déposé", detail: "BENIN TECH - Bilan 2024", time: "Il y a 4h" },
-          { action: "Rapport généré", detail: "INDUSTRIE ZINSOU - CdR", time: "Il y a 6h" },
-          { action: "Paiement reçu", detail: "SARL AKPLA - 35 000 FCFA", time: "Il y a 1j" },
-        ].map((a, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: i < 3 ? "1px solid #F8FAFC" : "none" }}>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{a.action}</div>
-              <div style={{ fontSize: 11, color: COLORS.slate }}>{a.detail}</div>
-            </div>
-            <div style={{ fontSize: 11, color: COLORS.slateLight }}>{a.time}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+const EMPTY_ENT = { nom: "", type: "SARL", secteur: "Commerce", rccm: "", ifu: "", telephone: "", localisation: "", abonnement: "Starter" };
 
 function EntreprisesPage() {
   const [entreprises, setEntreprises] = useState(ENTREPRISES_DATA);
   const [modal, setModal] = useState<string | null>(null);
   const [selected, setSelected] = useState<typeof ENTREPRISES_DATA[0] | null>(null);
-  const [form, setForm] = useState({ nom: "", secteur: "", abonnement: "Starter" });
+  const [form, setForm] = useState(EMPTY_ENT);
   const [success, setSuccess] = useState("");
 
-  const openCreer = () => { setForm({ nom: "", secteur: "", abonnement: "Starter" }); setModal("creer"); };
-  const openModifier = (e: typeof ENTREPRISES_DATA[0]) => { setSelected(e); setForm({ nom: e.nom, secteur: e.secteur, abonnement: e.abonnement }); setModal("modifier"); };
-  const openSuspendre = (e: typeof ENTREPRISES_DATA[0]) => { setSelected(e); setModal("suspendre"); };
+  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
 
   const handleCreer = () => {
     if (form.nom && form.secteur) {
-      setEntreprises([...entreprises, { id: Date.now(), nom: form.nom, secteur: form.secteur, statut: "actif", users: 0, abonnement: form.abonnement }]);
-      setModal(null); setSuccess("Entreprise créée avec succès !");
-      setTimeout(() => setSuccess(""), 3000);
+      setEntreprises([...entreprises, { id: Date.now(), ...form, statut: "actif", users: 0 }]);
+      setModal(null); showSuccess("Entreprise créée avec succès !");
     }
   };
 
   const handleModifier = () => {
     if (selected) {
-      setEntreprises(entreprises.map(e => e.id === selected.id ? { ...e, nom: form.nom, secteur: form.secteur, abonnement: form.abonnement } : e));
-      setModal(null); setSuccess("Entreprise modifiée avec succès !");
-      setTimeout(() => setSuccess(""), 3000);
+      setEntreprises(entreprises.map(e => e.id === selected.id ? { ...e, ...form } : e));
+      setModal(null); showSuccess("Entreprise modifiée avec succès !");
     }
   };
 
   const handleSuspendre = () => {
     if (selected) {
       setEntreprises(entreprises.map(e => e.id === selected.id ? { ...e, statut: e.statut === "actif" ? "suspendu" : "actif" } : e));
-      setModal(null); setSuccess("Statut mis à jour !");
-      setTimeout(() => setSuccess(""), 3000);
+      setModal(null); showSuccess("Statut mis à jour !");
     }
   };
+
+  const FormEntreprise = () => (
+    <>
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Nom de l'entreprise *</label>
+      <input style={inputStyle} placeholder="Ex: SARL AKPLA Commerce" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
+
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Type d'entreprise</label>
+      <select style={inputStyle} value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+        {TYPES_ENTREPRISE.map(t => <option key={t}>{t}</option>)}
+      </select>
+
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Secteur d'activité</label>
+      <select style={inputStyle} value={form.secteur} onChange={e => setForm({ ...form, secteur: e.target.value })}>
+        {SECTEURS.map(s => <option key={s}>{s}</option>)}
+      </select>
+
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>N° RCCM</label>
+      <input style={inputStyle} placeholder="Ex: RB/COT/24 A 12345" value={form.rccm} onChange={e => setForm({ ...form, rccm: e.target.value })} />
+
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>N° IFU</label>
+      <input style={inputStyle} placeholder="Ex: 123456789" value={form.ifu} onChange={e => setForm({ ...form, ifu: e.target.value })} />
+
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Téléphone</label>
+      <input style={inputStyle} placeholder="Ex: +229 97 00 00 00" value={form.telephone} onChange={e => setForm({ ...form, telephone: e.target.value })} />
+
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Situation géographique</label>
+      <input style={inputStyle} placeholder="Ex: Cotonou, Mènontin" value={form.localisation} onChange={e => setForm({ ...form, localisation: e.target.value })} />
+
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Plan d'abonnement</label>
+      <select style={inputStyle} value={form.abonnement} onChange={e => setForm({ ...form, abonnement: e.target.value })}>
+        <option>Starter</option><option>Business</option><option>Enterprise</option>
+      </select>
+    </>
+  );
 
   return (
     <div>
       {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Entreprises</h2>
-        <button onClick={openCreer} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Créer</button>
+        <button onClick={() => { setForm(EMPTY_ENT); setModal("creer"); }} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Créer</button>
       </div>
       {entreprises.map((e, i) => (
         <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
@@ -179,21 +164,19 @@ function EntreprisesPage() {
             <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{e.nom}</div>
             <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: e.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: e.statut === "actif" ? COLORS.green : COLORS.red }}>{e.statut}</span>
           </div>
-          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 10 }}>{e.secteur} · {e.users} utilisateurs · Plan {e.abonnement}</div>
+          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>{e.type} · {e.secteur} · Plan {e.abonnement}</div>
+          <div style={{ fontSize: 11, color: COLORS.slateLight, marginBottom: 4 }}>📞 {e.telephone} · 📍 {e.localisation}</div>
+          <div style={{ fontSize: 11, color: COLORS.slateLight, marginBottom: 10 }}>RCCM: {e.rccm} · IFU: {e.ifu}</div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => openModifier(e)} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
-            <button onClick={() => openSuspendre(e)} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.orangeLight, color: COLORS.orange, cursor: "pointer", fontWeight: 600 }}>⏸ {e.statut === "actif" ? "Suspendre" : "Réactiver"}</button>
+            <button onClick={() => { setSelected(e); setForm({ nom: e.nom, type: e.type, secteur: e.secteur, rccm: e.rccm, ifu: e.ifu, telephone: e.telephone, localisation: e.localisation, abonnement: e.abonnement }); setModal("modifier"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
+            <button onClick={() => { setSelected(e); setModal("suspendre"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.orangeLight, color: COLORS.orange, cursor: "pointer", fontWeight: 600 }}>⏸ {e.statut === "actif" ? "Suspendre" : "Réactiver"}</button>
           </div>
         </div>
       ))}
 
       {modal === "creer" && (
         <Modal titre="Créer une entreprise" onClose={() => setModal(null)}>
-          <input style={inputStyle} placeholder="Nom de l'entreprise" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
-          <input style={inputStyle} placeholder="Secteur d'activité" value={form.secteur} onChange={e => setForm({ ...form, secteur: e.target.value })} />
-          <select style={inputStyle} value={form.abonnement} onChange={e => setForm({ ...form, abonnement: e.target.value })}>
-            <option>Starter</option><option>Business</option><option>Enterprise</option>
-          </select>
+          <FormEntreprise />
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
             <button onClick={handleCreer} style={btnStyle(COLORS.gold, COLORS.navy)}>Créer</button>
@@ -203,11 +186,7 @@ function EntreprisesPage() {
 
       {modal === "modifier" && selected && (
         <Modal titre={`Modifier — ${selected.nom}`} onClose={() => setModal(null)}>
-          <input style={inputStyle} placeholder="Nom" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
-          <input style={inputStyle} placeholder="Secteur" value={form.secteur} onChange={e => setForm({ ...form, secteur: e.target.value })} />
-          <select style={inputStyle} value={form.abonnement} onChange={e => setForm({ ...form, abonnement: e.target.value })}>
-            <option>Starter</option><option>Business</option><option>Enterprise</option>
-          </select>
+          <FormEntreprise />
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
             <button onClick={handleModifier} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
@@ -218,7 +197,7 @@ function EntreprisesPage() {
       {modal === "suspendre" && selected && (
         <Modal titre={selected.statut === "actif" ? "Suspendre l'entreprise" : "Réactiver l'entreprise"} onClose={() => setModal(null)}>
           <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>
-            {selected.statut === "actif" ? `Voulez-vous suspendre ${selected.nom} ? L'accès sera bloqué.` : `Voulez-vous réactiver ${selected.nom} ?`}
+            {selected.statut === "actif" ? `Voulez-vous suspendre ${selected.nom} ?` : `Voulez-vous réactiver ${selected.nom} ?`}
           </p>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
@@ -239,29 +218,7 @@ function ComptablesPage() {
   const [form, setForm] = useState({ nom: "", email: "" });
   const [success, setSuccess] = useState("");
 
-  const handleAjouter = () => {
-    if (form.nom && form.email) {
-      setComptables([...comptables, { id: Date.now(), nom: form.nom, email: form.email, entreprises: 0, statut: "actif" }]);
-      setModal(null); setSuccess("Comptable ajouté !");
-      setTimeout(() => setSuccess(""), 3000);
-    }
-  };
-
-  const handleModifier = () => {
-    if (selected) {
-      setComptables(comptables.map(c => c.id === selected.id ? { ...c, nom: form.nom, email: form.email } : c));
-      setModal(null); setSuccess("Comptable modifié !");
-      setTimeout(() => setSuccess(""), 3000);
-    }
-  };
-
-  const handleSupprimer = () => {
-    if (selected) {
-      setComptables(comptables.filter(c => c.id !== selected.id));
-      setModal(null); setSuccess("Comptable supprimé !");
-      setTimeout(() => setSuccess(""), 3000);
-    }
-  };
+  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
 
   return (
     <div>
@@ -286,11 +243,13 @@ function ComptablesPage() {
 
       {modal === "ajouter" && (
         <Modal titre="Ajouter un comptable" onClose={() => setModal(null)}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Nom complet</label>
           <input style={inputStyle} placeholder="Nom complet" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Email</label>
           <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={handleAjouter} style={btnStyle(COLORS.gold, COLORS.navy)}>Ajouter</button>
+            <button onClick={() => { if (form.nom && form.email) { setComptables([...comptables, { id: Date.now(), nom: form.nom, email: form.email, entreprises: 0, statut: "actif" }]); setModal(null); showSuccess("Comptable ajouté !"); } }} style={btnStyle(COLORS.gold, COLORS.navy)}>Ajouter</button>
           </div>
         </Modal>
       )}
@@ -301,195 +260,20 @@ function ComptablesPage() {
           <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={handleModifier} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
+            <button onClick={() => { setComptables(comptables.map(c => c.id === selected.id ? { ...c, ...form } : c)); setModal(null); showSuccess("Modifié !"); }} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
           </div>
         </Modal>
       )}
 
       {modal === "supprimer" && selected && (
         <Modal titre="Supprimer le comptable" onClose={() => setModal(null)}>
-          <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>Voulez-vous vraiment supprimer <b>{selected.nom}</b> ? Cette action est irréversible.</p>
+          <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>Voulez-vous vraiment supprimer <b>{selected.nom}</b> ?</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={handleSupprimer} style={btnStyle(COLORS.red, COLORS.white)}>Supprimer</button>
+            <button onClick={() => { setComptables(comptables.filter(c => c.id !== selected.id)); setModal(null); showSuccess("Supprimé !"); }} style={btnStyle(COLORS.red, COLORS.white)}>Supprimer</button>
           </div>
         </Modal>
       )}
-    </div>
-  );
-}
-
-// ─── PERMISSIONS TOGGLE CELL ────────────────────────────────────────────────
-function PermCell({
-  value,
-  locked,
-  onChange,
-}: {
-  value: boolean;
-  locked?: boolean;
-  onChange?: () => void;
-}) {
-  if (locked) {
-    return (
-      <div style={{ textAlign: "center" }}>
-        <span
-          title="Colonne Admin verrouillée"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 32,
-            height: 32,
-            borderRadius: 8,
-            background: "#F1F5F9",
-            fontSize: 16,
-            cursor: "not-allowed",
-            opacity: 0.7,
-          }}
-        >
-          {value ? "✅" : "❌"}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ textAlign: "center" }}>
-      <button
-        onClick={onChange}
-        title={value ? "Cliquer pour retirer l'accès" : "Cliquer pour accorder l'accès"}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 32,
-          height: 32,
-          borderRadius: 8,
-          border: "2px solid",
-          borderColor: value ? COLORS.green : "#E2E8F0",
-          background: value ? COLORS.greenLight : "#F8FAFC",
-          fontSize: 16,
-          cursor: "pointer",
-          transition: "all 0.15s ease",
-          outline: "none",
-        }}
-        onMouseEnter={e => {
-          (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.12)";
-        }}
-        onMouseLeave={e => {
-          (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
-        }}
-      >
-        {value ? "✅" : "❌"}
-      </button>
-    </div>
-  );
-}
-
-// ─── PERMISSIONS PAGE ────────────────────────────────────────────────────────
-function PermissionsPage() {
-  const [permissions, setPermissions] = useState(INITIAL_PERMISSIONS);
-  const [saved, setSaved] = useState(false);
-
-  const toggle = (rowIdx: number, col: "comptable" | "lecteur" | "invite") => {
-    setPermissions(prev =>
-      prev.map((p, i) => (i === rowIdx ? { ...p, [col]: !p[col] } : p))
-    );
-    setSaved(false);
-  };
-
-  const handleSave = () => {
-    // Persist logic would go here (API call, etc.)
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-  };
-
-  const roles = ["Admin", "Comptable", "Lecteur", "Invité"];
-
-  return (
-    <div>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Permissions</h2>
-        <button
-          onClick={handleSave}
-          style={{
-            padding: "8px 16px",
-            background: COLORS.navy,
-            color: COLORS.white,
-            border: "none",
-            borderRadius: 8,
-            fontWeight: 700,
-            fontSize: 13,
-            cursor: "pointer",
-          }}
-        >
-          💾 Enregistrer
-        </button>
-      </div>
-
-      {/* Save confirmation */}
-      {saved && (
-        <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>
-          ✅ Permissions enregistrées avec succès !
-        </div>
-      )}
-
-      {/* Legend */}
-      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 12, color: COLORS.slate }}>
-          🔒 <b style={{ color: COLORS.navy }}>Admin</b> — colonne verrouillée (accès total permanent)
-        </span>
-        <span style={{ fontSize: 12, color: COLORS.slate }}>
-          · Cliquez sur ✅/❌ pour modifier les autres rôles
-        </span>
-      </div>
-
-      {/* Table */}
-      <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-        {/* Table header */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", padding: "12px 16px", background: COLORS.cream, gap: 8, alignItems: "center" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy }}>Action</div>
-          {roles.map((r, i) => (
-            <div key={i} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? COLORS.red : COLORS.navy }}>{r}</div>
-              {i === 0 && <div style={{ fontSize: 9, color: COLORS.red, fontWeight: 600, letterSpacing: "0.05em" }}>🔒 VERROUILLÉ</div>}
-            </div>
-          ))}
-        </div>
-
-        {/* Table rows */}
-        {permissions.map((p, rowIdx) => (
-          <div
-            key={rowIdx}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
-              padding: "12px 16px",
-              borderTop: "1px solid #F1F5F9",
-              gap: 8,
-              alignItems: "center",
-              transition: "background 0.1s",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = "#FAFBFF")}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-          >
-            <div style={{ fontSize: 13, color: COLORS.navy, fontWeight: 500 }}>{p.action}</div>
-
-            {/* Admin — locked */}
-            <PermCell value={p.admin} locked />
-
-            {/* Comptable */}
-            <PermCell value={p.comptable} onChange={() => toggle(rowIdx, "comptable")} />
-
-            {/* Lecteur */}
-            <PermCell value={p.lecteur} onChange={() => toggle(rowIdx, "lecteur")} />
-
-            {/* Invité */}
-            <PermCell value={p.invite} onChange={() => toggle(rowIdx, "invite")} />
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -498,45 +282,52 @@ function UtilisateursPage({ sub }: { sub: string }) {
   const [utilisateurs, setUtilisateurs] = useState(UTILISATEURS_DATA);
   const [modal, setModal] = useState<string | null>(null);
   const [selected, setSelected] = useState<typeof UTILISATEURS_DATA[0] | null>(null);
-  const [form, setForm] = useState({ nom: "", email: "", role: "Lecteur", entreprise: "" });
+  const [form, setForm] = useState({ nom: "", email: "", role: "Comptable", entreprise: "" });
   const [success, setSuccess] = useState("");
 
-  const roles = ["Admin", "Comptable", "Lecteur", "Invité"];
+  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
+
+  const permissions = [
+    { action: "Voir les rapports", admin: true, comptable: true, secretaire: true },
+    { action: "Créer des factures", admin: true, comptable: true, secretaire: true },
+    { action: "Gérer les utilisateurs", admin: true, comptable: false, secretaire: false },
+    { action: "Déposer des documents", admin: true, comptable: true, secretaire: false },
+    { action: "Voir la trésorerie", admin: true, comptable: true, secretaire: true },
+    { action: "Modifier les paramètres", admin: true, comptable: false, secretaire: false },
+    { action: "Saisir les recettes", admin: true, comptable: true, secretaire: true },
+    { action: "Valider les opérations", admin: true, comptable: true, secretaire: false },
+  ];
 
   if (sub === "Permissions") {
-    return <PermissionsPage />;
+    return (
+      <div>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Gestion des Permissions</h2>
+        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 16px", background: COLORS.cream }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy }}>Action</div>
+            {["Administrateur", "Comptable", "Sec. Caissière"].map((r, i) => (
+              <div key={i} style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy, textAlign: "center" }}>{r}</div>
+            ))}
+          </div>
+          {permissions.map((p, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 16px", borderTop: "1px solid #F1F5F9", alignItems: "center" }}>
+              <div style={{ fontSize: 13, color: COLORS.navy }}>{p.action}</div>
+              {[p.admin, p.comptable, p.secretaire].map((val, j) => (
+                <div key={j} style={{ textAlign: "center", fontSize: 16 }}>{val ? "✅" : "❌"}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
-
-  const handleAjouter = () => {
-    if (form.nom && form.email) {
-      setUtilisateurs([...utilisateurs, { id: Date.now(), nom: form.nom, email: form.email, entreprise: form.entreprise, role: form.role, statut: "actif" }]);
-      setModal(null); setSuccess("Utilisateur ajouté !");
-      setTimeout(() => setSuccess(""), 3000);
-    }
-  };
-
-  const handleModifier = () => {
-    if (selected) {
-      setUtilisateurs(utilisateurs.map(u => u.id === selected.id ? { ...u, nom: form.nom, email: form.email, role: form.role } : u));
-      setModal(null); setSuccess("Utilisateur modifié !");
-      setTimeout(() => setSuccess(""), 3000);
-    }
-  };
-
-  const handleSupprimer = () => {
-    if (selected) {
-      setUtilisateurs(utilisateurs.filter(u => u.id !== selected.id));
-      setModal(null); setSuccess("Utilisateur supprimé !");
-      setTimeout(() => setSuccess(""), 3000);
-    }
-  };
 
   return (
     <div>
       {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Utilisateurs</h2>
-        <button onClick={() => { setForm({ nom: "", email: "", role: "Lecteur", entreprise: "" }); setModal("ajouter"); }} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Ajouter</button>
+        <button onClick={() => { setForm({ nom: "", email: "", role: "Comptable", entreprise: "" }); setModal("ajouter"); }} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Ajouter</button>
       </div>
       {utilisateurs.map((u, i) => (
         <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
@@ -558,15 +349,19 @@ function UtilisateursPage({ sub }: { sub: string }) {
 
       {modal === "ajouter" && (
         <Modal titre="Ajouter un utilisateur" onClose={() => setModal(null)}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Nom complet</label>
           <input style={inputStyle} placeholder="Nom complet" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Email</label>
           <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Entreprise</label>
           <input style={inputStyle} placeholder="Entreprise" value={form.entreprise} onChange={e => setForm({ ...form, entreprise: e.target.value })} />
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Rôle</label>
           <select style={inputStyle} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-            {roles.map(r => <option key={r}>{r}</option>)}
+            {ROLES.map(r => <option key={r}>{r}</option>)}
           </select>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={handleAjouter} style={btnStyle(COLORS.gold, COLORS.navy)}>Ajouter</button>
+            <button onClick={() => { if (form.nom && form.email) { setUtilisateurs([...utilisateurs, { id: Date.now(), ...form, statut: "actif" }]); setModal(null); showSuccess("Utilisateur ajouté !"); } }} style={btnStyle(COLORS.gold, COLORS.navy)}>Ajouter</button>
           </div>
         </Modal>
       )}
@@ -576,11 +371,11 @@ function UtilisateursPage({ sub }: { sub: string }) {
           <input style={inputStyle} placeholder="Nom" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
           <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           <select style={inputStyle} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-            {roles.map(r => <option key={r}>{r}</option>)}
+            {ROLES.map(r => <option key={r}>{r}</option>)}
           </select>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={handleModifier} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
+            <button onClick={() => { setUtilisateurs(utilisateurs.map(u => u.id === selected.id ? { ...u, ...form } : u)); setModal(null); showSuccess("Modifié !"); }} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
           </div>
         </Modal>
       )}
@@ -590,7 +385,7 @@ function UtilisateursPage({ sub }: { sub: string }) {
           <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>Voulez-vous vraiment supprimer <b>{selected.nom}</b> ?</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={handleSupprimer} style={btnStyle(COLORS.red, COLORS.white)}>Supprimer</button>
+            <button onClick={() => { setUtilisateurs(utilisateurs.filter(u => u.id !== selected.id)); setModal(null); showSuccess("Supprimé !"); }} style={btnStyle(COLORS.red, COLORS.white)}>Supprimer</button>
           </div>
         </Modal>
       )}
@@ -644,9 +439,7 @@ function FacturationPage({ sub }: { sub: string }) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Abonnements</h2>
-      </div>
+      <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Abonnements</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
         {[
           { plan: "Starter", count: 2, prix: "15 000", color: COLORS.slate },
@@ -670,6 +463,49 @@ function FacturationPage({ sub }: { sub: string }) {
           <div style={{ fontSize: 11, color: COLORS.slateLight }}>Renouvellement : {a.renouvellement}</div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function SupervisionPage() {
+  const stats = [
+    { label: "Entreprises", value: "4", icon: "🏢", color: COLORS.blue },
+    { label: "Utilisateurs", value: "10", icon: "👥", color: COLORS.green },
+    { label: "Comptables", value: "3", icon: "👨‍💼", color: COLORS.gold },
+    { label: "Abonnements actifs", value: "3", icon: "✅", color: COLORS.green },
+    { label: "Revenu mensuel", value: "125 000", icon: "💰", color: COLORS.navy },
+    { label: "Tickets ouverts", value: "2", icon: "🎫", color: COLORS.orange },
+  ];
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
+        {stats.map((s, i) => (
+          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", borderLeft: `4px solid ${s.color}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontSize: 12, color: COLORS.slate }}>{s.label}</span>
+              <span style={{ fontSize: 20 }}>{s.icon}</span>
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: COLORS.navy }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: COLORS.white, borderRadius: 14, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14, marginBottom: 12 }}>Activité récente</div>
+        {[
+          { action: "Nouvelle entreprise créée", detail: "SARL AKPLA Commerce", time: "Il y a 2h" },
+          { action: "Document déposé", detail: "BENIN TECH - Bilan 2024", time: "Il y a 4h" },
+          { action: "Rapport généré", detail: "INDUSTRIE ZINSOU - CdR", time: "Il y a 6h" },
+          { action: "Paiement reçu", detail: "SARL AKPLA - 35 000 FCFA", time: "Il y a 1j" },
+        ].map((a, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: i < 3 ? "1px solid #F8FAFC" : "none" }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{a.action}</div>
+              <div style={{ fontSize: 11, color: COLORS.slate }}>{a.detail}</div>
+            </div>
+            <div style={{ fontSize: 11, color: COLORS.slateLight }}>{a.time}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
