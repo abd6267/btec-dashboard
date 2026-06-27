@@ -155,7 +155,7 @@ export default function VitrinePage() {
             </button>
           </div>
 
-          <div style={{ marginTop: 56, display: "flex", justifyContent: "center", gap: 48, flexWrap: "wrap" }}>
+          <div style={{ marginTop: 56, display: "flex", justifyContent: "center", gap: 48, flexWrap: "wrap", justifyContent: "center" }}>
             {[{ val: "500+", label: "Entreprises" }, { val: "98%", label: "Satisfaction" }, { val: "30j", label: "Essai gratuit" }].map((s, i) => (
               <div key={i} style={{ textAlign: "center" }}>
                 <div style={{ fontSize: 32, fontWeight: 900, color: C.gold, letterSpacing: "-0.03em" }}>{s.val}</div>
