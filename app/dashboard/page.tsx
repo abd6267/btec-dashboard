@@ -27,11 +27,10 @@ const NAV_ITEMS = [
   { id: "parametres", icon: "⚙", label: "Paramètres", sub: ["Profil", "Mot de passe", "Sécurité"] },
 ];
 
+// Chiffre d'affaires = Total des ventes (doublon supprimé) ; Achats fusionnés dans Dépenses
 const STATS = [
   { label: "Chiffre d'affaires", value: "48 250 000", unit: "FCFA", trend: "+12%", up: true, icon: "📈" },
-  { label: "Total ventes", value: "32 100 000", unit: "FCFA", trend: "+8%", up: true, icon: "🛒" },
-  { label: "Total achats", value: "12 400 000", unit: "FCFA", trend: "+2%", up: false, icon: "📦" },
-  { label: "Dépenses", value: "7 470 000", unit: "FCFA", trend: "-3%", up: false, icon: "💳" },
+  { label: "Dépenses totales", value: "19 870 000", unit: "FCFA", trend: "-1%", up: false, icon: "💳" },
   { label: "Trésorerie", value: "18 900 000", unit: "FCFA", trend: "+5%", up: true, icon: "🏦" },
   { label: "Créances", value: "6 450 000", unit: "FCFA", trend: "en attente", up: null, icon: "⏳" },
   { label: "Dettes", value: "3 200 000", unit: "FCFA", trend: "à payer", up: null, icon: "📋" },
