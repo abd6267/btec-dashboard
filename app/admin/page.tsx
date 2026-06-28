@@ -60,9 +60,20 @@ const PAIEMENTS = [
   { entreprise: "GIE ALAFIA", montant: "15 000", date: "01 Mai 2025", statut: "impayé" },
 ];
 
+const INIT_PERMISSIONS = [
+  { action: "Voir les rapports", comptable: true, secretaire: true },
+  { action: "Créer des factures", comptable: true, secretaire: true },
+  { action: "Gérer les utilisateurs", comptable: false, secretaire: false },
+  { action: "Déposer des documents", comptable: true, secretaire: false },
+  { action: "Voir la trésorerie", comptable: true, secretaire: true },
+  { action: "Modifier les paramètres", comptable: false, secretaire: false },
+  { action: "Saisir les recettes", comptable: true, secretaire: true },
+  { action: "Valider les opérations", comptable: true, secretaire: false },
+];
+
 function Modal({ titre, onClose, children }: { titre: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div style={{ background: COLORS.white, borderRadius: 16, padding: 24, width: "100%", maxWidth: 500, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy }}>{titre}</div>
@@ -86,386 +97,6 @@ const btnStyle = (bg: string, color: string): React.CSSProperties => ({
 });
 
 const EMPTY_ENT = { nom: "", type: "SARL", secteur: "Commerce", rccm: "", ifu: "", telephone: "", localisation: "", abonnement: "Starter" };
-
-function EntreprisesPage() {
-  const [entreprises, setEntreprises] = useState(ENTREPRISES_DATA);
-  const [modal, setModal] = useState<string | null>(null);
-  const [selected, setSelected] = useState<typeof ENTREPRISES_DATA[0] | null>(null);
-  const [form, setForm] = useState(EMPTY_ENT);
-  const [success, setSuccess] = useState("");
-
-  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
-
-  const handleCreer = () => {
-    if (form.nom && form.secteur) {
-      setEntreprises([...entreprises, { id: Date.now(), ...form, statut: "actif", users: 0 }]);
-      setModal(null); showSuccess("Entreprise créée avec succès !");
-    }
-  };
-
-  const handleModifier = () => {
-    if (selected) {
-      setEntreprises(entreprises.map(e => e.id === selected.id ? { ...e, ...form } : e));
-      setModal(null); showSuccess("Entreprise modifiée avec succès !");
-    }
-  };
-
-  const handleSuspendre = () => {
-    if (selected) {
-      setEntreprises(entreprises.map(e => e.id === selected.id ? { ...e, statut: e.statut === "actif" ? "suspendu" : "actif" } : e));
-      setModal(null); showSuccess("Statut mis à jour !");
-    }
-  };
-
-  const FormEntreprise = () => (
-    <>
-      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Nom de l'entreprise *</label>
-      <input style={inputStyle} placeholder="Ex: SARL AKPLA Commerce" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
-
-      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Type d'entreprise</label>
-      <select style={inputStyle} value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-        {TYPES_ENTREPRISE.map(t => <option key={t}>{t}</option>)}
-      </select>
-
-      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Secteur d'activité</label>
-      <select style={inputStyle} value={form.secteur} onChange={e => setForm({ ...form, secteur: e.target.value })}>
-        {SECTEURS.map(s => <option key={s}>{s}</option>)}
-      </select>
-
-      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>N° RCCM</label>
-      <input style={inputStyle} placeholder="Ex: RB/COT/24 A 12345" value={form.rccm} onChange={e => setForm({ ...form, rccm: e.target.value })} />
-
-      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>N° IFU</label>
-      <input style={inputStyle} placeholder="Ex: 123456789" value={form.ifu} onChange={e => setForm({ ...form, ifu: e.target.value })} />
-
-      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Téléphone</label>
-      <input style={inputStyle} placeholder="Ex: +229 97 00 00 00" value={form.telephone} onChange={e => setForm({ ...form, telephone: e.target.value })} />
-
-      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Situation géographique</label>
-      <input style={inputStyle} placeholder="Ex: Cotonou, Mènontin" value={form.localisation} onChange={e => setForm({ ...form, localisation: e.target.value })} />
-
-      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Plan d'abonnement</label>
-      <select style={inputStyle} value={form.abonnement} onChange={e => setForm({ ...form, abonnement: e.target.value })}>
-        <option>Starter</option><option>Business</option><option>Enterprise</option>
-      </select>
-    </>
-  );
-
-  return (
-    <div>
-      {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Entreprises</h2>
-        <button onClick={() => { setForm(EMPTY_ENT); setModal("creer"); }} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Créer</button>
-      </div>
-      {entreprises.map((e, i) => (
-        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{e.nom}</div>
-            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: e.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: e.statut === "actif" ? COLORS.green : COLORS.red }}>{e.statut}</span>
-          </div>
-          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>{e.type} · {e.secteur} · Plan {e.abonnement}</div>
-          <div style={{ fontSize: 11, color: COLORS.slateLight, marginBottom: 4 }}>📞 {e.telephone} · 📍 {e.localisation}</div>
-          <div style={{ fontSize: 11, color: COLORS.slateLight, marginBottom: 10 }}>RCCM: {e.rccm} · IFU: {e.ifu}</div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => { setSelected(e); setForm({ nom: e.nom, type: e.type, secteur: e.secteur, rccm: e.rccm, ifu: e.ifu, telephone: e.telephone, localisation: e.localisation, abonnement: e.abonnement }); setModal("modifier"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
-            <button onClick={() => { setSelected(e); setModal("suspendre"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.orangeLight, color: COLORS.orange, cursor: "pointer", fontWeight: 600 }}>⏸ {e.statut === "actif" ? "Suspendre" : "Réactiver"}</button>
-          </div>
-        </div>
-      ))}
-
-      {modal === "creer" && (
-        <Modal titre="Créer une entreprise" onClose={() => setModal(null)}>
-          <FormEntreprise />
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={handleCreer} style={btnStyle(COLORS.gold, COLORS.navy)}>Créer</button>
-          </div>
-        </Modal>
-      )}
-
-      {modal === "modifier" && selected && (
-        <Modal titre={`Modifier — ${selected.nom}`} onClose={() => setModal(null)}>
-          <FormEntreprise />
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={handleModifier} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
-          </div>
-        </Modal>
-      )}
-
-      {modal === "suspendre" && selected && (
-        <Modal titre={selected.statut === "actif" ? "Suspendre l'entreprise" : "Réactiver l'entreprise"} onClose={() => setModal(null)}>
-          <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>
-            {selected.statut === "actif" ? `Voulez-vous suspendre ${selected.nom} ?` : `Voulez-vous réactiver ${selected.nom} ?`}
-          </p>
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={handleSuspendre} style={btnStyle(selected.statut === "actif" ? COLORS.orange : COLORS.green, COLORS.white)}>
-              {selected.statut === "actif" ? "Suspendre" : "Réactiver"}
-            </button>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-function ComptablesPage() {
-  const [comptables, setComptables] = useState(COMPTABLES_DATA);
-  const [modal, setModal] = useState<string | null>(null);
-  const [selected, setSelected] = useState<typeof COMPTABLES_DATA[0] | null>(null);
-  const [form, setForm] = useState({ nom: "", email: "" });
-  const [success, setSuccess] = useState("");
-
-  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
-
-  return (
-    <div>
-      {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Comptables</h2>
-        <button onClick={() => { setForm({ nom: "", email: "" }); setModal("ajouter"); }} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Ajouter</button>
-      </div>
-      {comptables.map((c, i) => (
-        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{c.nom}</div>
-            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: c.statut === "actif" ? COLORS.greenLight : COLORS.cream, color: c.statut === "actif" ? COLORS.green : COLORS.slate }}>{c.statut}</span>
-          </div>
-          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 10 }}>{c.email} · {c.entreprises} entreprises</div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => { setSelected(c); setForm({ nom: c.nom, email: c.email }); setModal("modifier"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
-            <button onClick={() => { setSelected(c); setModal("supprimer"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.redLight, color: COLORS.red, cursor: "pointer", fontWeight: 600 }}>🗑 Supprimer</button>
-          </div>
-        </div>
-      ))}
-
-      {modal === "ajouter" && (
-        <Modal titre="Ajouter un comptable" onClose={() => setModal(null)}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Nom complet</label>
-          <input style={inputStyle} placeholder="Nom complet" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
-          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Email</label>
-          <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={() => { if (form.nom && form.email) { setComptables([...comptables, { id: Date.now(), nom: form.nom, email: form.email, entreprises: 0, statut: "actif" }]); setModal(null); showSuccess("Comptable ajouté !"); } }} style={btnStyle(COLORS.gold, COLORS.navy)}>Ajouter</button>
-          </div>
-        </Modal>
-      )}
-
-      {modal === "modifier" && selected && (
-        <Modal titre={`Modifier — ${selected.nom}`} onClose={() => setModal(null)}>
-          <input style={inputStyle} placeholder="Nom" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
-          <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={() => { setComptables(comptables.map(c => c.id === selected.id ? { ...c, ...form } : c)); setModal(null); showSuccess("Modifié !"); }} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
-          </div>
-        </Modal>
-      )}
-
-      {modal === "supprimer" && selected && (
-        <Modal titre="Supprimer le comptable" onClose={() => setModal(null)}>
-          <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>Voulez-vous vraiment supprimer <b>{selected.nom}</b> ?</p>
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={() => { setComptables(comptables.filter(c => c.id !== selected.id)); setModal(null); showSuccess("Supprimé !"); }} style={btnStyle(COLORS.red, COLORS.white)}>Supprimer</button>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-function UtilisateursPage({ sub }: { sub: string }) {
-  const [utilisateurs, setUtilisateurs] = useState(UTILISATEURS_DATA);
-  const [modal, setModal] = useState<string | null>(null);
-  const [selected, setSelected] = useState<typeof UTILISATEURS_DATA[0] | null>(null);
-  const [form, setForm] = useState({ nom: "", email: "", role: "Comptable", entreprise: "" });
-  const [success, setSuccess] = useState("");
-
-  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
-
-  const permissions = [
-    { action: "Voir les rapports", admin: true, comptable: true, secretaire: true },
-    { action: "Créer des factures", admin: true, comptable: true, secretaire: true },
-    { action: "Gérer les utilisateurs", admin: true, comptable: false, secretaire: false },
-    { action: "Déposer des documents", admin: true, comptable: true, secretaire: false },
-    { action: "Voir la trésorerie", admin: true, comptable: true, secretaire: true },
-    { action: "Modifier les paramètres", admin: true, comptable: false, secretaire: false },
-    { action: "Saisir les recettes", admin: true, comptable: true, secretaire: true },
-    { action: "Valider les opérations", admin: true, comptable: true, secretaire: false },
-  ];
-
-  if (sub === "Permissions") {
-    return (
-      <div>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Gestion des Permissions</h2>
-        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 16px", background: COLORS.cream }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy }}>Action</div>
-            {["Administrateur", "Comptable", "Sec. Caissière"].map((r, i) => (
-              <div key={i} style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy, textAlign: "center" }}>{r}</div>
-            ))}
-          </div>
-          {permissions.map((p, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 16px", borderTop: "1px solid #F1F5F9", alignItems: "center" }}>
-              <div style={{ fontSize: 13, color: COLORS.navy }}>{p.action}</div>
-              {[p.admin, p.comptable, p.secretaire].map((val, j) => (
-                <div key={j} style={{ textAlign: "center", fontSize: 16 }}>{val ? "✅" : "❌"}</div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Utilisateurs</h2>
-        <button onClick={() => { setForm({ nom: "", email: "", role: "Comptable", entreprise: "" }); setModal("ajouter"); }} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Ajouter</button>
-      </div>
-      {utilisateurs.map((u, i) => (
-        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{u.nom}</div>
-            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: u.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: u.statut === "actif" ? COLORS.green : COLORS.red }}>{u.statut}</span>
-          </div>
-          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>{u.email}</div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 10, alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: COLORS.slate }}>{u.entreprise}</span>
-            <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: COLORS.blueLight, color: COLORS.blue, fontWeight: 600 }}>{u.role}</span>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => { setSelected(u); setForm({ nom: u.nom, email: u.email, role: u.role, entreprise: u.entreprise }); setModal("modifier"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
-            <button onClick={() => { setSelected(u); setModal("supprimer"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.redLight, color: COLORS.red, cursor: "pointer", fontWeight: 600 }}>🗑 Supprimer</button>
-          </div>
-        </div>
-      ))}
-
-      {modal === "ajouter" && (
-        <Modal titre="Ajouter un utilisateur" onClose={() => setModal(null)}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Nom complet</label>
-          <input style={inputStyle} placeholder="Nom complet" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
-          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Email</label>
-          <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Entreprise</label>
-          <input style={inputStyle} placeholder="Entreprise" value={form.entreprise} onChange={e => setForm({ ...form, entreprise: e.target.value })} />
-          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Rôle</label>
-          <select style={inputStyle} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-            {ROLES.map(r => <option key={r}>{r}</option>)}
-          </select>
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={() => { if (form.nom && form.email) { setUtilisateurs([...utilisateurs, { id: Date.now(), ...form, statut: "actif" }]); setModal(null); showSuccess("Utilisateur ajouté !"); } }} style={btnStyle(COLORS.gold, COLORS.navy)}>Ajouter</button>
-          </div>
-        </Modal>
-      )}
-
-      {modal === "modifier" && selected && (
-        <Modal titre={`Modifier — ${selected.nom}`} onClose={() => setModal(null)}>
-          <input style={inputStyle} placeholder="Nom" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
-          <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-          <select style={inputStyle} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-            {ROLES.map(r => <option key={r}>{r}</option>)}
-          </select>
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={() => { setUtilisateurs(utilisateurs.map(u => u.id === selected.id ? { ...u, ...form } : u)); setModal(null); showSuccess("Modifié !"); }} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
-          </div>
-        </Modal>
-      )}
-
-      {modal === "supprimer" && selected && (
-        <Modal titre="Supprimer l'utilisateur" onClose={() => setModal(null)}>
-          <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>Voulez-vous vraiment supprimer <b>{selected.nom}</b> ?</p>
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
-            <button onClick={() => { setUtilisateurs(utilisateurs.filter(u => u.id !== selected.id)); setModal(null); showSuccess("Supprimé !"); }} style={btnStyle(COLORS.red, COLORS.white)}>Supprimer</button>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-function FacturationPage({ sub }: { sub: string }) {
-  const [success, setSuccess] = useState("");
-
-  if (sub === "Paiements") {
-    return (
-      <div>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Historique des Paiements</h2>
-        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-          {PAIEMENTS.map((p, i) => (
-            <div key={i} style={{ padding: "14px 16px", borderBottom: i < PAIEMENTS.length - 1 ? "1px solid #F8FAFC" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{p.entreprise}</div>
-                <div style={{ fontSize: 11, color: COLORS.slateLight }}>{p.date}</div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy }}>{p.montant} FCFA</div>
-                <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: p.statut === "payé" ? COLORS.greenLight : COLORS.redLight, color: p.statut === "payé" ? COLORS.green : COLORS.red, fontWeight: 600 }}>{p.statut}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (sub === "Renouvellements") {
-    return (
-      <div>
-        {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Renouvellements à venir</h2>
-        {ABONNEMENTS.map((a, i) => (
-          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{a.entreprise}</div>
-              <div style={{ fontSize: 12, color: COLORS.slate }}>Plan {a.plan} · {a.prix} FCFA/mois</div>
-              <div style={{ fontSize: 11, color: COLORS.slateLight }}>Renouvellement : {a.renouvellement}</div>
-            </div>
-            <button onClick={() => { setSuccess(`Renouvellement de ${a.entreprise} confirmé !`); setTimeout(() => setSuccess(""), 3000); }} style={{ fontSize: 11, padding: "6px 12px", borderRadius: 6, border: "none", background: COLORS.gold, color: COLORS.navy, cursor: "pointer", fontWeight: 700 }}>Renouveler</button>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Abonnements</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
-        {[
-          { plan: "Starter", count: 2, prix: "15 000", color: COLORS.slate },
-          { plan: "Business", count: 1, prix: "35 000", color: COLORS.gold },
-          { plan: "Enterprise", count: 1, prix: "75 000", color: COLORS.green },
-        ].map((p, i) => (
-          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 16, boxShadow: "0 2px 6px rgba(0,0,0,0.05)", borderTop: `3px solid ${p.color}`, textAlign: "center" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy, marginBottom: 4 }}>{p.plan}</div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: p.color }}>{p.count}</div>
-            <div style={{ fontSize: 11, color: COLORS.slate }}>clients · {p.prix} FCFA</div>
-          </div>
-        ))}
-      </div>
-      {ABONNEMENTS.map((a, i) => (
-        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{a.entreprise}</div>
-            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: a.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: a.statut === "actif" ? COLORS.green : COLORS.red }}>{a.statut}</span>
-          </div>
-          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>Plan {a.plan} · {a.prix} FCFA/mois</div>
-          <div style={{ fontSize: 11, color: COLORS.slateLight }}>Renouvellement : {a.renouvellement}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function SupervisionPage() {
   const stats = [
@@ -510,6 +141,438 @@ function SupervisionPage() {
   );
 }
 
+function EntreprisesPage() {
+  const [entreprises, setEntreprises] = useState(ENTREPRISES_DATA);
+  const [modal, setModal] = useState<string | null>(null);
+  const [selected, setSelected] = useState<typeof ENTREPRISES_DATA[0] | null>(null);
+  const [form, setForm] = useState(EMPTY_ENT);
+  const [success, setSuccess] = useState("");
+
+  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
+
+  const FormEntreprise = () => (
+    <>
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Nom de l'entreprise *</label>
+      <input style={inputStyle} placeholder="Ex: SARL AKPLA Commerce" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Type d'entreprise</label>
+      <select style={inputStyle} value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+        {TYPES_ENTREPRISE.map(t => <option key={t}>{t}</option>)}
+      </select>
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Secteur d'activité</label>
+      <select style={inputStyle} value={form.secteur} onChange={e => setForm({ ...form, secteur: e.target.value })}>
+        {SECTEURS.map(s => <option key={s}>{s}</option>)}
+      </select>
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>N° RCCM</label>
+      <input style={inputStyle} placeholder="Ex: RB/COT/24 A 12345" value={form.rccm} onChange={e => setForm({ ...form, rccm: e.target.value })} />
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>N° IFU</label>
+      <input style={inputStyle} placeholder="Ex: 123456789" value={form.ifu} onChange={e => setForm({ ...form, ifu: e.target.value })} />
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Téléphone</label>
+      <input style={inputStyle} placeholder="Ex: +229 97 00 00 00" value={form.telephone} onChange={e => setForm({ ...form, telephone: e.target.value })} />
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Situation géographique</label>
+      <input style={inputStyle} placeholder="Ex: Cotonou, Mènontin" value={form.localisation} onChange={e => setForm({ ...form, localisation: e.target.value })} />
+      <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Plan d'abonnement</label>
+      <select style={inputStyle} value={form.abonnement} onChange={e => setForm({ ...form, abonnement: e.target.value })}>
+        <option>Starter</option><option>Business</option><option>Enterprise</option>
+      </select>
+    </>
+  );
+
+  return (
+    <div>
+      {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Entreprises</h2>
+        <button onClick={() => { setForm(EMPTY_ENT); setModal("creer"); }} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Créer</button>
+      </div>
+      {entreprises.map((e, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{e.nom}</div>
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: e.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: e.statut === "actif" ? COLORS.green : COLORS.red }}>{e.statut}</span>
+          </div>
+          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>{e.type} · {e.secteur} · Plan {e.abonnement}</div>
+          <div style={{ fontSize: 11, color: COLORS.slateLight, marginBottom: 4 }}>📞 {e.telephone} · 📍 {e.localisation}</div>
+          <div style={{ fontSize: 11, color: COLORS.slateLight, marginBottom: 10 }}>RCCM: {e.rccm} · IFU: {e.ifu}</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { setSelected(e); setForm({ nom: e.nom, type: e.type, secteur: e.secteur, rccm: e.rccm, ifu: e.ifu, telephone: e.telephone, localisation: e.localisation, abonnement: e.abonnement }); setModal("modifier"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
+            <button onClick={() => { setSelected(e); setModal("suspendre"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.orangeLight, color: COLORS.orange, cursor: "pointer", fontWeight: 600 }}>⏸ {e.statut === "actif" ? "Suspendre" : "Réactiver"}</button>
+          </div>
+        </div>
+      ))}
+      {modal === "creer" && (
+        <Modal titre="Créer une entreprise" onClose={() => setModal(null)}>
+          <FormEntreprise />
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={() => { if (form.nom) { setEntreprises([...entreprises, { id: Date.now(), ...form, statut: "actif", users: 0 }]); setModal(null); showSuccess("Entreprise créée !"); } }} style={btnStyle(COLORS.gold, COLORS.navy)}>Créer</button>
+          </div>
+        </Modal>
+      )}
+      {modal === "modifier" && selected && (
+        <Modal titre={`Modifier — ${selected.nom}`} onClose={() => setModal(null)}>
+          <FormEntreprise />
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={() => { setEntreprises(entreprises.map(e => e.id === selected.id ? { ...e, ...form } : e)); setModal(null); showSuccess("Modifié !"); }} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
+          </div>
+        </Modal>
+      )}
+      {modal === "suspendre" && selected && (
+        <Modal titre={selected.statut === "actif" ? "Suspendre" : "Réactiver"} onClose={() => setModal(null)}>
+          <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>{selected.statut === "actif" ? `Suspendre ${selected.nom} ?` : `Réactiver ${selected.nom} ?`}</p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={() => { setEntreprises(entreprises.map(e => e.id === selected.id ? { ...e, statut: e.statut === "actif" ? "suspendu" : "actif" } : e)); setModal(null); showSuccess("Statut mis à jour !"); }} style={btnStyle(selected.statut === "actif" ? COLORS.orange : COLORS.green, COLORS.white)}>Confirmer</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function ComptablesPage() {
+  const [comptables, setComptables] = useState(COMPTABLES_DATA);
+  const [modal, setModal] = useState<string | null>(null);
+  const [selected, setSelected] = useState<typeof COMPTABLES_DATA[0] | null>(null);
+  const [form, setForm] = useState({ nom: "", email: "" });
+  const [success, setSuccess] = useState("");
+  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
+
+  return (
+    <div>
+      {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Comptables</h2>
+        <button onClick={() => { setForm({ nom: "", email: "" }); setModal("ajouter"); }} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Ajouter</button>
+      </div>
+      {comptables.map((c, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{c.nom}</div>
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: c.statut === "actif" ? COLORS.greenLight : COLORS.cream, color: c.statut === "actif" ? COLORS.green : COLORS.slate }}>{c.statut}</span>
+          </div>
+          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 10 }}>{c.email} · {c.entreprises} entreprises</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { setSelected(c); setForm({ nom: c.nom, email: c.email }); setModal("modifier"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
+            <button onClick={() => { setSelected(c); setModal("supprimer"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.redLight, color: COLORS.red, cursor: "pointer", fontWeight: 600 }}>🗑 Supprimer</button>
+          </div>
+        </div>
+      ))}
+      {modal === "ajouter" && (
+        <Modal titre="Ajouter un comptable" onClose={() => setModal(null)}>
+          <input style={inputStyle} placeholder="Nom complet" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
+          <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={() => { if (form.nom && form.email) { setComptables([...comptables, { id: Date.now(), ...form, entreprises: 0, statut: "actif" }]); setModal(null); showSuccess("Ajouté !"); } }} style={btnStyle(COLORS.gold, COLORS.navy)}>Ajouter</button>
+          </div>
+        </Modal>
+      )}
+      {modal === "modifier" && selected && (
+        <Modal titre={`Modifier — ${selected.nom}`} onClose={() => setModal(null)}>
+          <input style={inputStyle} placeholder="Nom" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
+          <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={() => { setComptables(comptables.map(c => c.id === selected.id ? { ...c, ...form } : c)); setModal(null); showSuccess("Modifié !"); }} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
+          </div>
+        </Modal>
+      )}
+      {modal === "supprimer" && selected && (
+        <Modal titre="Supprimer" onClose={() => setModal(null)}>
+          <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>Supprimer <b>{selected.nom}</b> ?</p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={() => { setComptables(comptables.filter(c => c.id !== selected.id)); setModal(null); showSuccess("Supprimé !"); }} style={btnStyle(COLORS.red, COLORS.white)}>Supprimer</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function UtilisateursPage({ sub }: { sub: string }) {
+  const [utilisateurs, setUtilisateurs] = useState(UTILISATEURS_DATA);
+  const [permissions, setPermissions] = useState(INIT_PERMISSIONS);
+  const [modal, setModal] = useState<string | null>(null);
+  const [selected, setSelected] = useState<typeof UTILISATEURS_DATA[0] | null>(null);
+  const [form, setForm] = useState({ nom: "", email: "", role: "Comptable", entreprise: "" });
+  const [success, setSuccess] = useState("");
+  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
+
+  const togglePerm = (i: number, col: "comptable" | "secretaire") => {
+    setPermissions(permissions.map((p, idx) => idx === i ? { ...p, [col]: !p[col] } : p));
+  };
+
+  if (sub === "Permissions") {
+    return (
+      <div>
+        {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Permissions</h2>
+          <button onClick={() => showSuccess("Permissions enregistrées !")} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>💾 Enregistrer</button>
+        </div>
+        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          {/* Header */}
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 16px", background: COLORS.cream }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy }}>Action</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy, textAlign: "center" }}>Administrateur</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy, textAlign: "center" }}>Comptable</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.navy, textAlign: "center" }}>Sec. Caissière</div>
+          </div>
+          {permissions.map((p, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 16px", borderTop: "1px solid #F1F5F9", alignItems: "center" }}>
+              <div style={{ fontSize: 13, color: COLORS.navy }}>{p.action}</div>
+              {/* Administrateur — fixe, non modifiable */}
+              <div style={{ textAlign: "center", fontSize: 16 }}>✅</div>
+              {/* Comptable — modifiable */}
+              <div style={{ textAlign: "center" }}>
+                <button onClick={() => togglePerm(i, "comptable")} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer" }}>
+                  {p.comptable ? "✅" : "❌"}
+                </button>
+              </div>
+              {/* Secrétaire caissière — modifiable */}
+              <div style={{ textAlign: "center" }}>
+                <button onClick={() => togglePerm(i, "secretaire")} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer" }}>
+                  {p.secretaire ? "✅" : "❌"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 12, fontSize: 12, color: COLORS.slate }}>💡 Cliquez sur ✅ ou ❌ pour modifier. L'administrateur a toujours tous les droits.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Gestion des Utilisateurs</h2>
+        <button onClick={() => { setForm({ nom: "", email: "", role: "Comptable", entreprise: "" }); setModal("ajouter"); }} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>+ Ajouter</button>
+      </div>
+      {utilisateurs.map((u, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{u.nom}</div>
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: u.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: u.statut === "actif" ? COLORS.green : COLORS.red }}>{u.statut}</span>
+          </div>
+          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>{u.email}</div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 10, alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: COLORS.slate }}>{u.entreprise}</span>
+            <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: COLORS.blueLight, color: COLORS.blue, fontWeight: 600 }}>{u.role}</span>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { setSelected(u); setForm({ nom: u.nom, email: u.email, role: u.role, entreprise: u.entreprise }); setModal("modifier"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>✏️ Modifier</button>
+            <button onClick={() => { setSelected(u); setModal("supprimer"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.redLight, color: COLORS.red, cursor: "pointer", fontWeight: 600 }}>🗑 Supprimer</button>
+          </div>
+        </div>
+      ))}
+      {modal === "ajouter" && (
+        <Modal titre="Ajouter un utilisateur" onClose={() => setModal(null)}>
+          <input style={inputStyle} placeholder="Nom complet" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
+          <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+          <input style={inputStyle} placeholder="Entreprise" value={form.entreprise} onChange={e => setForm({ ...form, entreprise: e.target.value })} />
+          <select style={inputStyle} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+            {ROLES.map(r => <option key={r}>{r}</option>)}
+          </select>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={() => { if (form.nom && form.email) { setUtilisateurs([...utilisateurs, { id: Date.now(), ...form, statut: "actif" }]); setModal(null); showSuccess("Ajouté !"); } }} style={btnStyle(COLORS.gold, COLORS.navy)}>Ajouter</button>
+          </div>
+        </Modal>
+      )}
+      {modal === "modifier" && selected && (
+        <Modal titre={`Modifier — ${selected.nom}`} onClose={() => setModal(null)}>
+          <input style={inputStyle} placeholder="Nom" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })} />
+          <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+          <select style={inputStyle} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+            {ROLES.map(r => <option key={r}>{r}</option>)}
+          </select>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={() => { setUtilisateurs(utilisateurs.map(u => u.id === selected.id ? { ...u, ...form } : u)); setModal(null); showSuccess("Modifié !"); }} style={btnStyle(COLORS.navy, COLORS.white)}>Enregistrer</button>
+          </div>
+        </Modal>
+      )}
+      {modal === "supprimer" && selected && (
+        <Modal titre="Supprimer" onClose={() => setModal(null)}>
+          <p style={{ fontSize: 14, color: COLORS.slate, marginBottom: 20 }}>Supprimer <b>{selected.nom}</b> ?</p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(null)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={() => { setUtilisateurs(utilisateurs.filter(u => u.id !== selected.id)); setModal(null); showSuccess("Supprimé !"); }} style={btnStyle(COLORS.red, COLORS.white)}>Supprimer</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function RapportsPage({ sub }: { sub: string }) {
+  const [rapports, setRapports] = useState([
+    { id: 1, titre: "Bilan global S1 2025", type: "Bilan", entreprise: "Toutes", date: "30 Jun 2025", statut: "généré" },
+    { id: 2, titre: "Compte de résultat Mai", type: "CdR", entreprise: "Toutes", date: "31 Mai 2025", statut: "généré" },
+    { id: 3, titre: "Balance AKPLA Juin", type: "Balance", entreprise: "SARL AKPLA Commerce", date: "25 Jun 2025", statut: "généré" },
+    { id: 4, titre: "Flux trésorerie ZINSOU", type: "Trésorerie", entreprise: "INDUSTRIE ZINSOU", date: "20 Jun 2025", statut: "en cours" },
+  ]);
+  const [modal, setModal] = useState(false);
+  const [form, setForm] = useState({ titre: "", type: "Bilan", entreprise: "Toutes", periode: "" });
+  const [success, setSuccess] = useState("");
+  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
+
+  const rapportsFiltres = sub === "Par entreprise"
+    ? rapports.filter(r => r.entreprise !== "Toutes")
+    : rapports.filter(r => r.entreprise === "Toutes");
+
+  const handleGenerer = () => {
+    if (form.titre && form.periode) {
+      const now = new Date().toLocaleDateString("fr-FR");
+      setRapports([...rapports, { id: Date.now(), titre: form.titre, type: form.type, entreprise: sub === "Par entreprise" ? form.entreprise : "Toutes", date: now, statut: "généré" }]);
+      setModal(false);
+      showSuccess("Rapport généré avec succès !");
+    }
+  };
+
+  return (
+    <div>
+      {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>
+          Rapports — {sub || "Global"}
+        </h2>
+        <button onClick={() => { setForm({ titre: "", type: "Bilan", entreprise: "SARL AKPLA Commerce", periode: "" }); setModal(true); }}
+          style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
+          + Générer
+        </button>
+      </div>
+
+      {rapportsFiltres.length === 0 && (
+        <div style={{ textAlign: "center", padding: "40px 0", color: COLORS.slate }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy }}>Aucun rapport pour cette catégorie</div>
+          <div style={{ fontSize: 13, marginTop: 6 }}>Cliquez sur "+ Générer" pour créer un rapport.</div>
+        </div>
+      )}
+
+      {rapportsFiltres.map((r, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{r.titre}</div>
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: r.statut === "généré" ? COLORS.greenLight : COLORS.orangeLight, color: r.statut === "généré" ? COLORS.green : COLORS.orange }}>{r.statut}</span>
+          </div>
+          <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 10 }}>
+            {r.type} · {r.entreprise} · {r.date}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.blueLight, color: COLORS.blue, cursor: "pointer", fontWeight: 600 }}>👁 Aperçu</button>
+            <button style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.greenLight, color: COLORS.green, cursor: "pointer", fontWeight: 600 }}>📥 Télécharger</button>
+            <button onClick={() => { setRapports(rapports.filter(rp => rp.id !== r.id)); showSuccess("Rapport supprimé !"); }} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.redLight, color: COLORS.red, cursor: "pointer", fontWeight: 600 }}>🗑 Supprimer</button>
+          </div>
+        </div>
+      ))}
+
+      {modal && (
+        <Modal titre={`Générer un rapport — ${sub || "Global"}`} onClose={() => setModal(false)}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Titre du rapport *</label>
+          <input style={inputStyle} placeholder="Ex: Bilan S1 2025" value={form.titre} onChange={e => setForm({ ...form, titre: e.target.value })} />
+
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Type de rapport</label>
+          <select style={inputStyle} value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+            {["Bilan", "Compte de résultat", "Balance", "Flux de trésorerie", "Grand livre", "Déclaration TVA"].map(t => <option key={t}>{t}</option>)}
+          </select>
+
+          {sub === "Par entreprise" && (
+            <>
+              <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Entreprise</label>
+              <select style={inputStyle} value={form.entreprise} onChange={e => setForm({ ...form, entreprise: e.target.value })}>
+                {ENTREPRISES_DATA.map(e => <option key={e.id}>{e.nom}</option>)}
+              </select>
+            </>
+          )}
+
+          <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, display: "block", marginBottom: 4 }}>Période *</label>
+          <input style={inputStyle} placeholder="Ex: Juin 2025 ou S1 2025" value={form.periode} onChange={e => setForm({ ...form, periode: e.target.value })} />
+
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setModal(false)} style={btnStyle("#F1F5F9", COLORS.slate)}>Annuler</button>
+            <button onClick={handleGenerer} style={btnStyle(COLORS.gold, COLORS.navy)}>Générer</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function FacturationPage({ sub }: { sub: string }) {
+  const [success, setSuccess] = useState("");
+
+  if (sub === "Paiements") {
+    return (
+      <div>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Historique des Paiements</h2>
+        <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          {PAIEMENTS.map((p, i) => (
+            <div key={i} style={{ padding: "14px 16px", borderBottom: i < PAIEMENTS.length - 1 ? "1px solid #F8FAFC" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{p.entreprise}</div>
+                <div style={{ fontSize: 11, color: COLORS.slateLight }}>{p.date}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy }}>{p.montant} FCFA</div>
+                <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: p.statut === "payé" ? COLORS.greenLight : COLORS.redLight, color: p.statut === "payé" ? COLORS.green : COLORS.red, fontWeight: 600 }}>{p.statut}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (sub === "Renouvellements") {
+    return (
+      <div>
+        {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Renouvellements</h2>
+        {ABONNEMENTS.map((a, i) => (
+          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{a.entreprise}</div>
+              <div style={{ fontSize: 12, color: COLORS.slate }}>Plan {a.plan} · {a.prix} FCFA/mois</div>
+              <div style={{ fontSize: 11, color: COLORS.slateLight }}>Renouvellement : {a.renouvellement}</div>
+            </div>
+            <button onClick={() => { setSuccess(`${a.entreprise} renouvelé !`); setTimeout(() => setSuccess(""), 3000); }} style={{ fontSize: 11, padding: "6px 12px", borderRadius: 6, border: "none", background: COLORS.gold, color: COLORS.navy, cursor: "pointer", fontWeight: 700 }}>Renouveler</button>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Abonnements</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+        {[{ plan: "Starter", count: 2, prix: "15 000", color: COLORS.slate }, { plan: "Business", count: 1, prix: "35 000", color: COLORS.gold }, { plan: "Enterprise", count: 1, prix: "75 000", color: COLORS.green }].map((p, i) => (
+          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 16, boxShadow: "0 2px 6px rgba(0,0,0,0.05)", borderTop: `3px solid ${p.color}`, textAlign: "center" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy, marginBottom: 4 }}>{p.plan}</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: p.color }}>{p.count}</div>
+            <div style={{ fontSize: 11, color: COLORS.slate }}>{p.prix} FCFA</div>
+          </div>
+        ))}
+      </div>
+      {ABONNEMENTS.map((a, i) => (
+        <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{a.entreprise}</div>
+            <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: a.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: a.statut === "actif" ? COLORS.green : COLORS.red }}>{a.statut}</span>
+          </div>
+          <div style={{ fontSize: 12, color: COLORS.slate }}>Plan {a.plan} · {a.prix} FCFA/mois · Renouvellement : {a.renouvellement}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function PlaceholderPage({ label }: { label: string }) {
   return (
     <div style={{ background: COLORS.white, borderRadius: 14, padding: "40px 20px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
@@ -546,6 +609,7 @@ export default function AdminPage() {
       case "comptables": return <ComptablesPage />;
       case "utilisateurs": return <UtilisateursPage sub={activeSub} />;
       case "facturation": return <FacturationPage sub={activeSub} />;
+      case "rapports": return <RapportsPage sub={activeSub} />;
       default: return <PlaceholderPage label={`${currentItem?.label}${activeSub ? ` — ${activeSub}` : ""}`} />;
     }
   };
