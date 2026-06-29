@@ -396,7 +396,7 @@ export default function VitrinePage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 32 }}>
             {[
               { icon: "📧", label: "Email", val: "contact@btecbenin.com" },
-              { icon: "📞", label: "WhatsApp", val: "+229 01 48 55 26 07" },
+              { icon: "📞", label: "WhatsApp", val: "+229 01 66 37 54 68" },
               { icon: "📍", label: "Adresse", val: "Mènontin, Cotonou" },
             ].map((c, i) => (
               <div key={i} style={{
@@ -431,7 +431,7 @@ export default function VitrinePage() {
                 }}>
                   Envoyer le message
                 </button>
-                <a href="https://wa.me/22901485526" style={{
+                <a href="https://wa.me/2290166375468" style={{
                   display: "block", textAlign: "center", background: "#25D366",
                   color: C.snow, borderRadius: 10, padding: "13px",
                   fontWeight: 700, fontSize: 14, textDecoration: "none",
