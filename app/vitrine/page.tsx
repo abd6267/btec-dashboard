@@ -143,7 +143,7 @@ export default function VitrinePage() {
               fontSize: 15, cursor: "pointer",
               boxShadow: `0 4px 20px rgba(201,168,76,0.35)`,
             }}>
-              Commencer gratuitement →
+              Commencer  →
             </button>
             <button onClick={() => router.push("/login")} style={{
               background: "transparent", color: C.snow,
@@ -191,7 +191,7 @@ export default function VitrinePage() {
                     fontSize: 11, color: C.gold, fontWeight: 900, flexShrink: 0,
                   }}>✓</span>
                   <span style={{ fontSize: 14, color: C.mist }}>{item}</span>
-                </div>
+                </div> 
               ))}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
