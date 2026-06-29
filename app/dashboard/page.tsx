@@ -15,10 +15,12 @@ const COLORS = {
 const NAV_ITEMS = [
   { id: "dashboard", icon: "⊞", label: "Tableau de bord", sub: [] },
   { id: "ventes", icon: "↑", label: "Ventes", sub: ["Factures", "Historique"] },
-  { id: "achats", icon: "↓", label: "Achats", sub: ["Fournisseurs", "Commandes"] },
-  { id: "depenses", icon: "💳", label: "Dépenses", sub: ["Dépenses enregistrées", "Catégories"] },
-  { id: "clients", icon: "👤", label: "Clients", sub: ["Liste clients", "Créances"] },
-  { id: "fournisseurs", icon: "🏭", label: "Fournisseurs", sub: ["Liste fournisseurs", "Dettes"] },
+  // Correction B : Achat — ajout "Prestataires"
+  { id: "achats", icon: "↓", label: "Achats", sub: ["Fournisseurs", "Prestataires", "Historique"] },
+  // Correction B : Dépenses — sous-rubriques renommées "État" et "Divers"
+  { id: "depenses", icon: "💳", label: "Dépenses", sub: ["État", "Divers"] },
+  { id: "clients", icon: "👤", label: "Clients", sub: ["Liste des Clients", "Créances"] },
+  { id: "fournisseurs", icon: "🏭", label: "Fournisseurs", sub: ["Liste des Fournisseurs", "Dettes"] },
   { id: "tresorerie", icon: "🏦", label: "Trésorerie", sub: ["Entrées", "Sorties", "Solde"] },
   { id: "rapports", icon: "📊", label: "Rapports", sub: ["Bilan", "Compte de résultat", "Flux de trésorerie"] },
   { id: "fiscal", icon: "🧾", label: "Fiscalité", sub: ["TVA", "Déclarations", "Échéances"] },
@@ -27,22 +29,51 @@ const NAV_ITEMS = [
   { id: "parametres", icon: "⚙", label: "Paramètres", sub: ["Profil", "Mot de passe", "Sécurité"] },
 ];
 
-// Chiffre d'affaires = Total des ventes (doublon supprimé) ; Achats fusionnés dans Dépenses
+// Correction B : droits d'édition par sous-rubrique (true = bouton Ajouter visible)
+// Les grandes rubriques n'ont jamais le bouton (canEdit = false si sub === "")
+const EDIT_RIGHTS: Record<string, boolean> = {
+  "ventes::Factures": true,
+  "ventes::Historique": false,
+  "achats::Fournisseurs": true,
+  "achats::Prestataires": true,
+  "achats::Historique": false,
+  "depenses::État": true,
+  "depenses::Divers": true,
+  "clients::Liste des Clients": true,
+  "clients::Créances": false,
+  "fournisseurs::Liste des Fournisseurs": true,
+  "fournisseurs::Dettes": false,
+  "tresorerie::Entrées": false,
+  "tresorerie::Sorties": false,
+  "tresorerie::Solde": false,
+  "rapports::Bilan": false,
+  "rapports::Compte de résultat": false,
+  "rapports::Flux de trésorerie": false,
+  "fiscal::TVA": false,
+  "fiscal::Déclarations": false,
+  "fiscal::Échéances": false,
+  "documents::Dépôt de fichiers": false,
+  "documents::Archivage": false,
+  "documents::Recherche": false,
+};
+
+// Correction A : KPI réordonnés + champ evolValue pour % N/N-1
 const STATS = [
-  { label: "Chiffre d'affaires", value: "48 250 000", unit: "FCFA", trend: "+12%", up: true, icon: "📈" },
-  { label: "Dépenses totales", value: "19 870 000", unit: "FCFA", trend: "-1%", up: false, icon: "💳" },
-  { label: "Trésorerie", value: "18 900 000", unit: "FCFA", trend: "+5%", up: true, icon: "🏦" },
-  { label: "Créances", value: "6 450 000", unit: "FCFA", trend: "en attente", up: null, icon: "⏳" },
-  { label: "Dettes", value: "3 200 000", unit: "FCFA", trend: "à payer", up: null, icon: "📋" },
-  { label: "Résultat net", value: "28 380 000", unit: "FCFA", trend: "+18%", up: true, icon: "✅" },
+  { label: "Chiffre d'affaires", value: "48 250 000", unit: "FCFA", up: true,  icon: "📈", evolValue: "+12%", evolUp: true  },
+  { label: "Recettes encaissées", value: "41 800 000", unit: "FCFA", up: true,  icon: "💰", evolValue: "+9%",  evolUp: true  },
+  { label: "Créances Clients",    value: "6 450 000",  unit: "FCFA", up: null,  icon: "⏳", evolValue: "+3%",  evolUp: true  },
+  { label: "Dépenses totales",    value: "19 870 000", unit: "FCFA", up: false, icon: "💳", evolValue: "-1%",  evolUp: false },
+  { label: "Dettes",              value: "3 200 000",  unit: "FCFA", up: null,  icon: "📋", evolValue: "-5%",  evolUp: false },
+  { label: "Trésorerie",          value: "18 900 000", unit: "FCFA", up: true,  icon: "🏦", evolValue: "+5%",  evolUp: true  },
+  { label: "Résultat Brut",       value: "28 380 000", unit: "FCFA", up: true,  icon: "✅", evolValue: "+18%", evolUp: true  },
 ];
 
 const TRANSACTIONS = [
-  { date: "23 Jun", libelle: "Facture BENIN TECH #024", type: "vente", montant: 1250000, statut: "payé" },
-  { date: "22 Jun", libelle: "Achat matériel bureau", type: "achat", montant: -380000, statut: "payé" },
-  { date: "21 Jun", libelle: "Prestation ZINSOU", type: "vente", montant: 2100000, statut: "en attente" },
-  { date: "20 Jun", libelle: "Loyer Mènontin", type: "depense", montant: -250000, statut: "payé" },
-  { date: "19 Jun", libelle: "Facture AKPLA #019", type: "vente", montant: 870000, statut: "payé" },
+  { date: "23 Jun", libelle: "Facture BENIN TECH #024", type: "vente",   montant:  1250000, statut: "payé" },
+  { date: "22 Jun", libelle: "Achat matériel bureau",   type: "achat",   montant:  -380000, statut: "payé" },
+  { date: "21 Jun", libelle: "Prestation ZINSOU",        type: "vente",   montant:  2100000, statut: "en attente" },
+  { date: "20 Jun", libelle: "Loyer Mènontin",           type: "depense", montant:  -250000, statut: "payé" },
+  { date: "19 Jun", libelle: "Facture AKPLA #019",       type: "vente",   montant:   870000, statut: "payé" },
 ];
 
 const ENTREPRISES = [
@@ -50,46 +81,32 @@ const ENTREPRISES = [
 ];
 
 type Message = { from: string; text: string; time: string; me: boolean };
-type DocItem = { nom: string; type: string; taille: string; date: string; url?: string };
+type DocItem  = { nom: string; type: string; taille: string; date: string; url?: string };
 
 const INITIAL_MESSAGES: Message[] = [
   { from: "Cabinet BTEC", text: "Bonjour, vos documents du mois de Mai sont prêts.", time: "10:30", me: false },
-  { from: "Moi", text: "Merci ! Je vais les consulter.", time: "10:45", me: true },
-  { from: "Cabinet BTEC", text: "N'hésitez pas si vous avez des questions.", time: "11:00", me: false },
+  { from: "Moi",          text: "Merci ! Je vais les consulter.",                    time: "10:45", me: true  },
+  { from: "Cabinet BTEC", text: "N'hésitez pas si vous avez des questions.",         time: "11:00", me: false },
 ];
 
 const INITIAL_DOCS: DocItem[] = [
-  { nom: "Bilan_2024.pdf", type: "PDF", taille: "2.4 MB", date: "20 Jun" },
-  { nom: "Factures_Mai.xlsx", type: "Excel", taille: "1.1 MB", date: "18 Jun" },
-  { nom: "Contrat_ZINSOU.pdf", type: "PDF", taille: "890 KB", date: "15 Jun" },
-  { nom: "Declaration_TVA.pdf", type: "PDF", taille: "540 KB", date: "10 Jun" },
+  { nom: "Bilan_2024.pdf",        type: "PDF",   taille: "2.4 MB", date: "20 Jun" },
+  { nom: "Factures_Mai.xlsx",     type: "Excel", taille: "1.1 MB", date: "18 Jun" },
+  { nom: "Contrat_ZINSOU.pdf",    type: "PDF",   taille: "890 KB", date: "15 Jun" },
+  { nom: "Declaration_TVA.pdf",   type: "PDF",   taille: "540 KB", date: "10 Jun" },
 ];
 
 function PageContent({
-  active,
-  sub,
-  itemsMap,
-  onOpenModal,
-  messages,
-  messageInput,
-  setMessageInput,
-  onSendMessage,
-  docs,
-  onBrowseClick,
-  onDownload,
-  onOpenSettings,
+  active, sub, itemsMap, onOpenModal,
+  messages, messageInput, setMessageInput, onSendMessage,
+  docs, onBrowseClick, onDownload, onOpenSettings,
 }: {
-  active: string;
-  sub: string;
+  active: string; sub: string;
   itemsMap: Record<string, string[]>;
   onOpenModal: () => void;
-  messages: Message[];
-  messageInput: string;
-  setMessageInput: (v: string) => void;
-  onSendMessage: () => void;
-  docs: DocItem[];
-  onBrowseClick: () => void;
-  onDownload: (doc: DocItem) => void;
+  messages: Message[]; messageInput: string;
+  setMessageInput: (v: string) => void; onSendMessage: () => void;
+  docs: DocItem[]; onBrowseClick: () => void; onDownload: (doc: DocItem) => void;
   onOpenSettings: (modal: "profil" | "password" | "securite") => void;
 }) {
   const titles: Record<string, string> = {
@@ -100,24 +117,38 @@ function PageContent({
     messagerie: "Messagerie", parametres: "Paramètres",
   };
 
+  // Correction A : tableau de bord avec KPI réordonnés + badge % N/N-1
   if (active === "dashboard") {
     return (
       <div>
         <div className="stats-grid" style={{ display: "grid", gap: 12, marginBottom: 20 }}>
           {STATS.map((s, i) => (
-            <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", borderTop: `3px solid ${s.up === true ? COLORS.green : s.up === false ? COLORS.red : COLORS.gold}` }}>
+            <div key={i} style={{
+              background: COLORS.white, borderRadius: 12, padding: 16,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              borderTop: `3px solid ${s.up === true ? COLORS.green : s.up === false ? COLORS.red : COLORS.gold}`,
+            }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontSize: 11, color: COLORS.slate, fontWeight: 500 }}>{s.label}</span>
                 <span style={{ fontSize: 16 }}>{s.icon}</span>
               </div>
               <div style={{ fontSize: 16, fontWeight: 800, color: COLORS.navy, marginBottom: 2 }}>{s.value}</div>
-              <div style={{ fontSize: 10, color: COLORS.slateLight, marginBottom: 4 }}>{s.unit}</div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: s.up === true ? COLORS.green : s.up === false ? COLORS.red : COLORS.gold }}>
-                {s.up !== null ? (s.up ? "▲" : "▼") : "●"} {s.trend}
+              <div style={{ fontSize: 10, color: COLORS.slateLight, marginBottom: 8 }}>{s.unit}</div>
+              {/* Correction A : badge % évolution N/N-1 */}
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                background: s.evolUp ? COLORS.greenLight : COLORS.redLight,
+                borderRadius: 6, padding: "2px 8px",
+              }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: s.evolUp ? COLORS.green : COLORS.red }}>
+                  {s.evolUp ? "▲" : "▼"} {s.evolValue}
+                </span>
+                <span style={{ fontSize: 9, color: COLORS.slate }}>vs N-1</span>
               </div>
             </div>
           ))}
         </div>
+
         <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
           <div style={{ padding: "14px 16px", borderBottom: "1px solid #F1F5F9", fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>Transactions récentes</div>
           {TRANSACTIONS.map((t, i) => (
@@ -200,9 +231,9 @@ function PageContent({
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {[
-          { icon: "👤", titre: "Profil", desc: "Modifier vos informations personnelles", key: "profil" as const },
-          { icon: "🔑", titre: "Mot de passe", desc: "Changer votre mot de passe", key: "password" as const },
-          { icon: "🔒", titre: "Sécurité", desc: "Authentification à deux facteurs", key: "securite" as const },
+          { icon: "👤", titre: "Profil",        desc: "Modifier vos informations personnelles", key: "profil"   as const },
+          { icon: "🔑", titre: "Mot de passe",  desc: "Changer votre mot de passe",             key: "password" as const },
+          { icon: "🔒", titre: "Sécurité",      desc: "Authentification à deux facteurs",       key: "securite" as const },
         ].map((p, i) => (
           <div key={i} onClick={() => onOpenSettings(p.key)} style={{ background: COLORS.white, borderRadius: 12, padding: "16px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -219,15 +250,17 @@ function PageContent({
     );
   }
 
-  // Sections génériques : Ventes, Achats, Dépenses, Clients, Fournisseurs, Trésorerie, Rapports, Fiscalité
+  // Sections génériques — Correction B : bouton conditionnel selon EDIT_RIGHTS
   const key = `${active}::${sub}`;
   const list = itemsMap[key] || [];
+  // Grandes rubriques sans sous-rubrique : édition toujours désactivée
+  const canEdit = sub ? (EDIT_RIGHTS[key] === true) : false;
 
   return (
     <div style={{ background: COLORS.white, borderRadius: 14, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy }}>{titles[active]} {sub ? `— ${sub}` : ""}</h2>
-        {list.length > 0 && (
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy }}>{titles[active]}{sub ? ` — ${sub}` : ""}</h2>
+        {canEdit && (
           <button onClick={onOpenModal} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
         )}
       </div>
@@ -237,14 +270,14 @@ function PageContent({
           <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy, marginBottom: 6 }}>Section {sub || titles[active]}</div>
           <div style={{ fontSize: 13 }}>Les données s'afficheront ici.</div>
-          <button onClick={onOpenModal} style={{ marginTop: 16, background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
+          {canEdit && (
+            <button onClick={onOpenModal} style={{ marginTop: 16, background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
+          )}
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {list.map((entry, i) => (
-            <div key={i} style={{ padding: "12px 14px", borderRadius: 8, background: COLORS.cream, fontSize: 13, color: COLORS.navy, fontWeight: 600 }}>
-              {entry}
-            </div>
+            <div key={i} style={{ padding: "12px 14px", borderRadius: 8, background: COLORS.cream, fontSize: 13, color: COLORS.navy, fontWeight: 600 }}>{entry}</div>
           ))}
         </div>
       )}
@@ -263,50 +296,39 @@ export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalValue, setModalValue] = useState("");
 
-  // Messagerie
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [messageInput, setMessageInput] = useState("");
 
-  // Documents
   const [docs, setDocs] = useState<DocItem[]>(INITIAL_DOCS);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Paramètres
   const [settingsModal, setSettingsModal] = useState<null | "profil" | "password" | "securite">(null);
-  const [profilNom, setProfilNom] = useState("Moumouni Nabil");
-  const [profilEmail, setProfilEmail] = useState("moumouni.nabil@bteceenin.com");
+  // Correction : nom du comptable mis à jour (David GOLOU, Abomey-Calavi)
+  const [profilNom, setProfilNom] = useState("David GOLOU");
+  const [profilEmail, setProfilEmail] = useState("david.golou@btecbenin.com");
   const [pwdCurrent, setPwdCurrent] = useState("");
   const [pwdNew, setPwdNew] = useState("");
   const [pwdConfirm, setPwdConfirm] = useState("");
   const [twoFA, setTwoFA] = useState(false);
 
-  const toggleMenu = (id: string) => {
+  const toggleMenu = (id: string) =>
     setOpenMenus(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
 
-  const handleNav = (id: string, sub = "") => {
-    setActiveNav(id);
-    setActiveSub(sub);
-    setMenuOpen(false);
-  };
+  const handleNav = (id: string, sub = "") => { setActiveNav(id); setActiveSub(sub); setMenuOpen(false); };
 
   const handleLogout = () => {
-    // TODO: brancher la vraie déconnexion (suppression token/session) quand le backend sera prêt
+    // TODO: brancher la vraie déconnexion quand le backend sera prêt
     router.push("/login");
   };
 
   const handleSaveModal = () => {
     if (!modalValue.trim()) return;
     const key = `${activeNav}::${activeSub}`;
-    setItemsMap(prev => ({
-      ...prev,
-      [key]: [...(prev[key] || []), modalValue.trim()],
-    }));
+    setItemsMap(prev => ({ ...prev, [key]: [...(prev[key] || []), modalValue.trim()] }));
     setModalValue("");
     setModalOpen(false);
   };
 
-  // --- Messagerie ---
   const handleSendMessage = () => {
     if (!messageInput.trim()) return;
     const time = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -314,16 +336,15 @@ export default function DashboardPage() {
     setMessageInput("");
   };
 
-  // --- Documents ---
   const handleBrowseClick = () => fileInputRef.current?.click();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+    const months = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
     const now = new Date();
     const dateStr = `${now.getDate()} ${months[now.getMonth()]}`;
-    const newDocs: DocItem[] = Array.from(files).map((f) => ({
+    const newDocs: DocItem[] = Array.from(files).map(f => ({
       nom: f.name,
       type: f.name.split(".").pop()?.toUpperCase() || "Fichier",
       taille: f.size / (1024 * 1024) >= 1 ? `${(f.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(f.size / 1024))} KB`,
@@ -338,44 +359,23 @@ export default function DashboardPage() {
     let url = doc.url;
     let isTemporary = false;
     if (!url) {
-      const blob = new Blob(
-        [`Document : ${doc.nom}\nType : ${doc.type}\nTaille : ${doc.taille}\nDate : ${doc.date}\n\nCeci est un fichier de démonstration (données fictives).`],
-        { type: "text/plain" }
-      );
+      const blob = new Blob([`Document : ${doc.nom}\nType : ${doc.type}\nTaille : ${doc.taille}\nDate : ${doc.date}\n\nCeci est un fichier de démonstration.`], { type: "text/plain" });
       url = URL.createObjectURL(blob);
       isTemporary = true;
     }
     const a = document.createElement("a");
-    a.href = url;
-    a.download = doc.nom;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    a.href = url; a.download = doc.nom;
+    document.body.appendChild(a); a.click(); a.remove();
     if (isTemporary) URL.revokeObjectURL(url);
   };
 
-  // --- Paramètres ---
-  const handleSaveProfil = () => {
-    setSettingsModal(null);
-    alert("Profil mis à jour avec succès.");
-  };
-
+  const handleSaveProfil   = () => { setSettingsModal(null); alert("Profil mis à jour avec succès."); };
   const handleSavePassword = () => {
-    if (!pwdCurrent || !pwdNew || !pwdConfirm) {
-      alert("Veuillez remplir tous les champs.");
-      return;
-    }
-    if (pwdNew !== pwdConfirm) {
-      alert("Les mots de passe ne correspondent pas.");
-      return;
-    }
-    setPwdCurrent("");
-    setPwdNew("");
-    setPwdConfirm("");
-    setSettingsModal(null);
-    alert("Mot de passe changé avec succès.");
+    if (!pwdCurrent || !pwdNew || !pwdConfirm) { alert("Veuillez remplir tous les champs."); return; }
+    if (pwdNew !== pwdConfirm) { alert("Les mots de passe ne correspondent pas."); return; }
+    setPwdCurrent(""); setPwdNew(""); setPwdConfirm("");
+    setSettingsModal(null); alert("Mot de passe changé avec succès.");
   };
-
   const handleSaveSecurite = () => {
     setSettingsModal(null);
     alert(twoFA ? "Authentification à deux facteurs activée." : "Authentification à deux facteurs désactivée.");
@@ -429,29 +429,13 @@ export default function DashboardPage() {
         ))}
       </nav>
       <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: COLORS.navy }}>M</div>
+        <div style={{ width: 28, height: 28, borderRadius: "50%", background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: COLORS.navy }}>D</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ color: COLORS.white, fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profilNom}</div>
           <div style={{ color: COLORS.slateLight, fontSize: 10 }}>Comptable principal</div>
         </div>
-        <button
-          onClick={handleLogout}
-          title="Déconnexion"
-          style={{
-            background: "rgba(220,38,38,0.12)",
-            border: "none",
-            borderRadius: 8,
-            width: 30,
-            height: 30,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            color: COLORS.red,
-            fontSize: 14,
-            flexShrink: 0,
-          }}
-        >
+        <button onClick={handleLogout} title="Déconnexion"
+          style={{ background: "rgba(220,38,38,0.12)", border: "none", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: COLORS.red, fontSize: 14, flexShrink: 0 }}>
           🚪
         </button>
       </div>
@@ -475,11 +459,9 @@ export default function DashboardPage() {
         @media (max-width: 380px) { .stats-grid { grid-template-columns: repeat(1, 1fr) !important; } }
       `}</style>
 
-      {/* Input fichier caché, partagé par le module Documents */}
       <input ref={fileInputRef} type="file" multiple onChange={handleFileChange} style={{ display: "none" }} />
 
       <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', system-ui, sans-serif", background: COLORS.cream, overflow: "hidden" }}>
-
         {/* SIDEBAR DESKTOP */}
         <div className="sidebar-desktop" style={{ width: 220, minWidth: 220, background: COLORS.navy, flexDirection: "column", overflow: "hidden" }}>
           <SidebarContent />
@@ -521,38 +503,26 @@ export default function DashboardPage() {
           {/* PAGE CONTENT */}
           <div style={{ flex: 1, overflowY: "auto", padding: 16, minWidth: 0 }}>
             <PageContent
-              active={activeNav}
-              sub={activeSub}
-              itemsMap={itemsMap}
+              active={activeNav} sub={activeSub} itemsMap={itemsMap}
               onOpenModal={() => setModalOpen(true)}
-              messages={messages}
-              messageInput={messageInput}
-              setMessageInput={setMessageInput}
-              onSendMessage={handleSendMessage}
-              docs={docs}
-              onBrowseClick={handleBrowseClick}
-              onDownload={handleDownload}
+              messages={messages} messageInput={messageInput}
+              setMessageInput={setMessageInput} onSendMessage={handleSendMessage}
+              docs={docs} onBrowseClick={handleBrowseClick} onDownload={handleDownload}
               onOpenSettings={(modal) => setSettingsModal(modal)}
             />
           </div>
         </div>
       </div>
 
-      {/* MODAL AJOUTER (sections génériques) */}
+      {/* MODAL AJOUTER */}
       {modalOpen && (
-        <div
-          onClick={() => setModalOpen(false)}
-          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
-        >
+        <div onClick={() => setModalOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 380 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 4 }}>
               Ajouter — {titlesForModal[activeNav] || currentItem?.label}{activeSub ? ` (${activeSub})` : ""}
             </h3>
             <p style={{ fontSize: 12, color: COLORS.slate, marginBottom: 16 }}>Saisissez un libellé pour cette nouvelle entrée.</p>
-            <input
-              autoFocus
-              value={modalValue}
-              onChange={(e) => setModalValue(e.target.value)}
+            <input autoFocus value={modalValue} onChange={(e) => setModalValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleSaveModal(); }}
               placeholder="Ex : Nom, référence, description..."
               style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 16 }}
@@ -565,24 +535,15 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* MODAL PARAMÈTRES : PROFIL */}
+      {/* MODAL PROFIL */}
       {settingsModal === "profil" && (
         <div onClick={() => setSettingsModal(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 380 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>👤 Modifier le profil</h3>
             <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Nom complet</label>
-            <input
-              value={profilNom}
-              onChange={(e) => setProfilNom(e.target.value)}
-              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 14 }}
-            />
+            <input value={profilNom} onChange={(e) => setProfilNom(e.target.value)} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 14 }} />
             <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Adresse email</label>
-            <input
-              value={profilEmail}
-              onChange={(e) => setProfilEmail(e.target.value)}
-              type="email"
-              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 16 }}
-            />
+            <input value={profilEmail} onChange={(e) => setProfilEmail(e.target.value)} type="email" style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 16 }} />
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button onClick={() => setSettingsModal(null)} style={{ background: COLORS.cream, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
               <button onClick={handleSaveProfil} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Enregistrer</button>
@@ -591,33 +552,23 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* MODAL PARAMÈTRES : MOT DE PASSE */}
+      {/* MODAL MOT DE PASSE */}
       {settingsModal === "password" && (
         <div onClick={() => setSettingsModal(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 380 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>🔑 Changer le mot de passe</h3>
-            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Mot de passe actuel</label>
-            <input
-              type="password"
-              value={pwdCurrent}
-              onChange={(e) => setPwdCurrent(e.target.value)}
-              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 14 }}
-            />
-            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Nouveau mot de passe</label>
-            <input
-              type="password"
-              value={pwdNew}
-              onChange={(e) => setPwdNew(e.target.value)}
-              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 14 }}
-            />
-            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Confirmer le nouveau mot de passe</label>
-            <input
-              type="password"
-              value={pwdConfirm}
-              onChange={(e) => setPwdConfirm(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleSavePassword(); }}
-              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 16 }}
-            />
+            {[
+              { label: "Mot de passe actuel",           val: pwdCurrent, set: setPwdCurrent },
+              { label: "Nouveau mot de passe",           val: pwdNew,     set: setPwdNew     },
+              { label: "Confirmer le nouveau mot de passe", val: pwdConfirm, set: setPwdConfirm },
+            ].map((f, i) => (
+              <div key={i}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>{f.label}</label>
+                <input type="password" value={f.val} onChange={(e) => f.set(e.target.value)}
+                  onKeyDown={i === 2 ? (e) => { if (e.key === "Enter") handleSavePassword(); } : undefined}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 14 }} />
+              </div>
+            ))}
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button onClick={() => { setSettingsModal(null); setPwdCurrent(""); setPwdNew(""); setPwdConfirm(""); }} style={{ background: COLORS.cream, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
               <button onClick={handleSavePassword} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Changer</button>
@@ -626,16 +577,13 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* MODAL PARAMÈTRES : SÉCURITÉ */}
+      {/* MODAL SÉCURITÉ */}
       {settingsModal === "securite" && (
         <div onClick={() => setSettingsModal(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 380 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 6 }}>🔒 Sécurité du compte</h3>
             <p style={{ fontSize: 12, color: COLORS.slate, marginBottom: 18 }}>Renforcez la sécurité avec l'authentification à deux facteurs (2FA).</p>
-            <div
-              onClick={() => setTwoFA(!twoFA)}
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", borderRadius: 10, background: COLORS.cream, cursor: "pointer", marginBottom: 18 }}
-            >
+            <div onClick={() => setTwoFA(!twoFA)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", borderRadius: 10, background: COLORS.cream, cursor: "pointer", marginBottom: 18 }}>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>Authentification à deux facteurs</div>
                 <div style={{ fontSize: 11, color: COLORS.slate }}>{twoFA ? "Activée" : "Désactivée"}</div>
