@@ -66,12 +66,12 @@ const STATS = [
 ];
 
 // Section Opérations (avant Transactions)
-const OPERATIONS = [
-  { ref: "OP-2024-061", libelle: "Virement entrant — Client BENIN TECH", categorie: "Encaissement", montant: 3500000, date: "25 Jun", statut: "validé",    methode: "Virement" },
-  { ref: "OP-2024-060", libelle: "Paiement fournisseur — MATCO SARL",     categorie: "Décaissement", montant: -820000, date: "24 Jun", statut: "validé",    methode: "Chèque"   },
-  { ref: "OP-2024-059", libelle: "Encaissement espèces — Prestation WEB",  categorie: "Encaissement", montant: 1150000, date: "23 Jun", statut: "en attente", methode: "Espèces"  },
-  { ref: "OP-2024-058", libelle: "Règlement TVA Q2 2024",                  categorie: "Fiscal",       montant: -640000, date: "22 Jun", statut: "validé",    methode: "Virement" },
-  { ref: "OP-2024-057", libelle: "Remboursement avance — ZINSOU",          categorie: "Autre",        montant: -200000, date: "20 Jun", statut: "validé",    methode: "Espèces"  },
+const INITIAL_OPERATIONS: Operation[] = [
+  { id: "OP-2024-061", libelle: "Virement entrant — Client BENIN TECH", categorie: "Encaissement", montant: 3500000, date: "25 Jun", statut: "validé",    methode: "Virement" },
+  { id: "OP-2024-060", libelle: "Paiement fournisseur — MATCO SARL",     categorie: "Décaissement", montant: -820000, date: "24 Jun", statut: "validé",    methode: "Chèque"   },
+  { id: "OP-2024-059", libelle: "Encaissement espèces — Prestation WEB",  categorie: "Encaissement", montant: 1150000, date: "23 Jun", statut: "en attente", methode: "Espèces"  },
+  { id: "OP-2024-058", libelle: "Règlement TVA Q2 2024",                  categorie: "Fiscal",       montant: -640000, date: "22 Jun", statut: "validé",    methode: "Virement" },
+  { id: "OP-2024-057", libelle: "Remboursement avance — ZINSOU",          categorie: "Autre",        montant: -200000, date: "20 Jun", statut: "validé",    methode: "Espèces"  },
 ];
 
 const TRANSACTIONS = [
@@ -91,6 +91,10 @@ type DocItem  = { nom: string; type: string; taille: string; date: string; url?:
 // Fichier attaché à une entrée d'une sous-rubrique
 type AttachedFile = { nom: string; taille: string; type: string; url: string };
 type SectionEntry = { label: string; files: AttachedFile[] };
+type Operation = {
+  id: string; libelle: string; categorie: string; montant: number;
+  date: string; statut: string; methode: string;
+};
 
 const INITIAL_MESSAGES: Message[] = [
   { from: "Cabinet BTEC", text: "Bonjour, vos documents du mois de Mai sont prêts.", time: "10:30", me: false },
@@ -105,6 +109,10 @@ const INITIAL_DOCS: DocItem[] = [
   { nom: "Declaration_TVA.pdf",   type: "PDF",   taille: "540 KB", date: "10 Jun" },
 ];
 
+const OP_CATEGORIES = ["Encaissement", "Décaissement", "Fiscal", "Autre"];
+const OP_METHODES = ["Virement", "Chèque", "Espèces", "Mobile Money"];
+const OP_STATUTS = ["validé", "en attente"];
+
 // ─── Barre de catégorie opération ──────────────────────────────────────────
 const OP_CATEGORY_COLORS: Record<string, { bg: string; color: string }> = {
   "Encaissement": { bg: COLORS.greenLight,  color: COLORS.green  },
@@ -118,7 +126,9 @@ function PageContent({
   active, sub, itemsMap, onOpenModal,
   messages, messageInput, setMessageInput, onSendMessage,
   docs, onBrowseClick, onDownload, onOpenSettings,
-  sectionFileInputRef, onSectionFileBrowse, sectionFileKey, setSectionFileKey,
+  onSectionFileBrowse,
+  sectionDocsMap, onSectionDocBrowse, onDownloadSectionDoc,
+  operations, onOpenOpModal, onDeleteOp,
 }: {
   active: string; sub: string;
   itemsMap: Record<string, SectionEntry[]>;
@@ -127,9 +137,11 @@ function PageContent({
   setMessageInput: (v: string) => void; onSendMessage: () => void;
   docs: DocItem[]; onBrowseClick: () => void; onDownload: (doc: DocItem) => void;
   onOpenSettings: (modal: "profil" | "password" | "securite") => void;
-  sectionFileInputRef: React.MutableRefObject<HTMLInputElement>;
   onSectionFileBrowse: (key: string, entryIdx: number) => void;
-  sectionFileKey: string; setSectionFileKey: (k: string) => void;
+  sectionDocsMap: Record<string, AttachedFile[]>;
+  onSectionDocBrowse: (key: string) => void;
+  onDownloadSectionDoc: (f: AttachedFile) => void;
+  operations: Operation[]; onOpenOpModal: (op?: Operation) => void; onDeleteOp: (id: string) => void;
 }) {
   const titles: Record<string, string> = {
     dashboard: "Tableau de bord",
@@ -171,33 +183,36 @@ function PageContent({
           ))}
         </div>
 
-        {/* ── SECTION OPÉRATIONS (nouvelle) ─────────────────────────────── */}
+        {/* ── SECTION OPÉRATIONS (éditable) ─────────────────────────────── */}
         <div style={{ background: COLORS.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: 20 }}>
           <div style={{
             padding: "14px 16px", borderBottom: "1px solid #F1F5F9",
-            display: "flex", justifyContent: "space-between", alignItems: "center",
+            display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap",
           }}>
             <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>🔄 Opérations du mois</div>
-            <div style={{ display: "flex", gap: 6 }}>
-              {["Tout", "Encaissement", "Décaissement", "Fiscal"].map((f, i) => (
-                <span key={i} style={{
-                  fontSize: 10, fontWeight: 600, padding: "3px 8px",
-                  borderRadius: 20, cursor: "pointer",
-                  background: i === 0 ? COLORS.navy : COLORS.cream,
-                  color: i === 0 ? COLORS.white : COLORS.slate,
-                }}>
-                  {f}
-                </span>
-              ))}
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 6 }}>
+                {["Tout", "Encaissement", "Décaissement", "Fiscal"].map((f, i) => (
+                  <span key={i} style={{
+                    fontSize: 10, fontWeight: 600, padding: "3px 8px",
+                    borderRadius: 20, cursor: "pointer",
+                    background: i === 0 ? COLORS.navy : COLORS.cream,
+                    color: i === 0 ? COLORS.white : COLORS.slate,
+                  }}>
+                    {f}
+                  </span>
+                ))}
+              </div>
+              <button onClick={() => onOpenOpModal()} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>+ Ajouter</button>
             </div>
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
                 <tr style={{ background: "#F8FAFC" }}>
-                  {["Réf.", "Libellé", "Catégorie", "Méthode", "Date", "Montant (FCFA)", "Statut"].map((h, i) => (
+                  {["Réf.", "Libellé", "Catégorie", "Méthode", "Date", "Montant (FCFA)", "Statut", ""].map((h, i) => (
                     <th key={i} style={{
-                      padding: "10px 14px", textAlign: i >= 5 ? "right" : "left",
+                      padding: "10px 14px", textAlign: i >= 5 && i < 7 ? "right" : "left",
                       color: COLORS.slate, fontWeight: 600, fontSize: 11,
                       borderBottom: "1px solid #F1F5F9", whiteSpace: "nowrap",
                     }}>{h}</th>
@@ -205,11 +220,11 @@ function PageContent({
                 </tr>
               </thead>
               <tbody>
-                {OPERATIONS.map((op, i) => {
+                {operations.map((op, i) => {
                   const catStyle = OP_CATEGORY_COLORS[op.categorie] || { bg: COLORS.cream, color: COLORS.slate };
                   return (
-                    <tr key={i} style={{ borderBottom: i < OPERATIONS.length - 1 ? "1px solid #F8FAFC" : "none" }}>
-                      <td style={{ padding: "11px 14px", color: COLORS.slateLight, fontFamily: "monospace", fontSize: 11 }}>{op.ref}</td>
+                    <tr key={op.id} style={{ borderBottom: i < operations.length - 1 ? "1px solid #F8FAFC" : "none" }}>
+                      <td style={{ padding: "11px 14px", color: COLORS.slateLight, fontFamily: "monospace", fontSize: 11 }}>{op.id}</td>
                       <td style={{ padding: "11px 14px", color: COLORS.navy, fontWeight: 600, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{op.libelle}</td>
                       <td style={{ padding: "11px 14px" }}>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 10, background: catStyle.bg, color: catStyle.color }}>{op.categorie}</span>
@@ -226,9 +241,16 @@ function PageContent({
                           color: op.statut === "validé" ? COLORS.green : COLORS.orange,
                         }}>{op.statut}</span>
                       </td>
+                      <td style={{ padding: "11px 14px", textAlign: "right", whiteSpace: "nowrap" }}>
+                        <button onClick={() => onOpenOpModal(op)} title="Modifier" style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, marginRight: 6 }}>✏️</button>
+                        <button onClick={() => onDeleteOp(op.id)} title="Supprimer" style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13 }}>🗑️</button>
+                      </td>
                     </tr>
                   );
                 })}
+                {operations.length === 0 && (
+                  <tr><td colSpan={8} style={{ padding: "20px 14px", textAlign: "center", color: COLORS.slateLight, fontSize: 12 }}>Aucune opération enregistrée.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -341,6 +363,7 @@ function PageContent({
   // ── Sections génériques avec import de fichiers ───────────────────────
   const key = `${active}::${sub}`;
   const entries: SectionEntry[] = itemsMap[key] || [];
+  const sectionDocs: AttachedFile[] = sectionDocsMap[key] || [];
   const canEdit = sub ? (EDIT_RIGHTS[key] === true) : false;
 
   const handleDownloadAttached = (f: AttachedFile) => {
@@ -350,67 +373,94 @@ function PageContent({
   };
 
   return (
-    <div style={{ background: COLORS.white, borderRadius: 14, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy }}>{titles[active]}{sub ? ` — ${sub}` : ""}</h2>
-        {canEdit && (
-          <button onClick={onOpenModal} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
-        )}
-      </div>
-
-      {entries.length === 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", color: COLORS.slate }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy, marginBottom: 6 }}>Section {sub || titles[active]}</div>
-          <div style={{ fontSize: 13 }}>Les données s'afficheront ici.</div>
-          {canEdit && (
-            <button onClick={onOpenModal} style={{ marginTop: 16, background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
+    <div>
+      {/* Zone de dépôt direct de fichiers — visible sur toute sous-rubrique éditable */}
+      {canEdit && (
+        <div style={{ background: COLORS.white, borderRadius: 14, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: 16 }}>
+          <div style={{ border: "2px dashed #E2E8F0", borderRadius: 12, padding: "22px 20px", textAlign: "center" }}>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>📤</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy, marginBottom: 4 }}>Importer un fichier dans « {sub} »</div>
+            <div style={{ fontSize: 11, color: COLORS.slate, marginBottom: 10 }}>PDF, Excel, Word, images — téléchargeables ensuite</div>
+            <button onClick={() => onSectionDocBrowse(key)} style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 8, padding: "9px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>📁 Parcourir</button>
+          </div>
+          {sectionDocs.length > 0 && (
+            <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+              {sectionDocs.map((f, fi) => (
+                <div key={fi} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 8, background: "#F8FAFC", gap: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.nom}</div>
+                    <div style={{ fontSize: 10, color: COLORS.slateLight }}>{f.type} · {f.taille}</div>
+                  </div>
+                  <button onClick={() => onDownloadSectionDoc(f)} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: "none", background: COLORS.greenLight, color: COLORS.green, cursor: "pointer", fontWeight: 600, flexShrink: 0 }}>📥 Télécharger</button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {entries.map((entry, idx) => (
-            <div key={idx} style={{ borderRadius: 10, border: "1.5px solid #E2E8F0", overflow: "hidden" }}>
-              {/* En-tête de l'entrée */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: COLORS.cream }}>
-                <div style={{ fontSize: 13, color: COLORS.navy, fontWeight: 600 }}>{entry.label}</div>
-                {canEdit && (
-                  <button
-                    onClick={() => onSectionFileBrowse(key, idx)}
-                    style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.navy, color: COLORS.white, cursor: "pointer", fontWeight: 600, flexShrink: 0 }}
-                  >
-                    📎 Joindre un fichier
-                  </button>
+      )}
+
+      <div style={{ background: COLORS.white, borderRadius: 14, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy }}>{titles[active]}{sub ? ` — ${sub}` : ""}</h2>
+          {canEdit && (
+            <button onClick={onOpenModal} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
+          )}
+        </div>
+
+        {entries.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", color: COLORS.slate }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy, marginBottom: 6 }}>Section {sub || titles[active]}</div>
+            <div style={{ fontSize: 13 }}>Les données s'afficheront ici.</div>
+            {canEdit && (
+              <button onClick={onOpenModal} style={{ marginTop: 16, background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Ajouter</button>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {entries.map((entry, idx) => (
+              <div key={idx} style={{ borderRadius: 10, border: "1.5px solid #E2E8F0", overflow: "hidden" }}>
+                {/* En-tête de l'entrée */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: COLORS.cream }}>
+                  <div style={{ fontSize: 13, color: COLORS.navy, fontWeight: 600 }}>{entry.label}</div>
+                  {canEdit && (
+                    <button
+                      onClick={() => onSectionFileBrowse(key, idx)}
+                      style={{ fontSize: 11, padding: "5px 10px", borderRadius: 6, border: "none", background: COLORS.navy, color: COLORS.white, cursor: "pointer", fontWeight: 600, flexShrink: 0 }}
+                    >
+                      📎 Joindre un fichier
+                    </button>
+                  )}
+                </div>
+                {/* Liste des fichiers joints */}
+                {entry.files.length > 0 && (
+                  <div style={{ padding: "8px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+                    {entry.files.map((f, fi) => (
+                      <div key={fi} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 8, background: "#F8FAFC", gap: 10 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.nom}</div>
+                          <div style={{ fontSize: 10, color: COLORS.slateLight }}>{f.type} · {f.taille}</div>
+                        </div>
+                        <button
+                          onClick={() => handleDownloadAttached(f)}
+                          style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: "none", background: COLORS.greenLight, color: COLORS.green, cursor: "pointer", fontWeight: 600, flexShrink: 0 }}
+                        >
+                          📥 Télécharger
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {entry.files.length === 0 && canEdit && (
+                  <div style={{ padding: "10px 14px", fontSize: 12, color: COLORS.slateLight, fontStyle: "italic" }}>
+                    Aucun fichier joint — cliquez sur « Joindre un fichier » pour en ajouter.
+                  </div>
                 )}
               </div>
-              {/* Liste des fichiers joints */}
-              {entry.files.length > 0 && (
-                <div style={{ padding: "8px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
-                  {entry.files.map((f, fi) => (
-                    <div key={fi} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 8, background: "#F8FAFC", gap: 10 }}>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.navy, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.nom}</div>
-                        <div style={{ fontSize: 10, color: COLORS.slateLight }}>{f.type} · {f.taille}</div>
-                      </div>
-                      <button
-                        onClick={() => handleDownloadAttached(f)}
-                        style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: "none", background: COLORS.greenLight, color: COLORS.green, cursor: "pointer", fontWeight: 600, flexShrink: 0 }}
-                      >
-                        📥 Télécharger
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {entry.files.length === 0 && canEdit && (
-                <div style={{ padding: "10px 14px", fontSize: 12, color: COLORS.slateLight, fontStyle: "italic" }}>
-                  Aucun fichier joint — cliquez sur « Joindre un fichier » pour en ajouter.
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -429,11 +479,27 @@ export default function DashboardPage() {
   const [modalOpen, setModalOpen]           = useState(false);
   const [modalValue, setModalValue]         = useState("");
 
+  // Fichiers importés directement au niveau d'une sous-rubrique (sans entrée)
+  const [sectionDocsMap, setSectionDocsMap] = useState<Record<string, AttachedFile[]>>({});
+  const sectionDocInputRef                  = useRef<HTMLInputElement>(null!);
+  const [sectionDocTarget, setSectionDocTarget] = useState<string>("");
+
   const [messages, setMessages]             = useState<Message[]>(INITIAL_MESSAGES);
   const [messageInput, setMessageInput]     = useState("");
 
   const [docs, setDocs]                     = useState<DocItem[]>(INITIAL_DOCS);
   const fileInputRef                        = useRef<HTMLInputElement>(null!);
+
+  // ── Opérations (éditables) ──────────────────────────────────────────
+  const [operations, setOperations]         = useState<Operation[]>(INITIAL_OPERATIONS);
+  const [opModalOpen, setOpModalOpen]       = useState(false);
+  const [opEditingId, setOpEditingId]       = useState<string | null>(null);
+  const [opLibelle, setOpLibelle]           = useState("");
+  const [opCategorie, setOpCategorie]       = useState(OP_CATEGORIES[0]);
+  const [opMethode, setOpMethode]           = useState(OP_METHODES[0]);
+  const [opMontant, setOpMontant]           = useState("");
+  const [opStatut, setOpStatut]             = useState(OP_STATUTS[0]);
+  const [opDate, setOpDate]                 = useState("");
 
   // ── Import fichiers dans une sous-rubrique ──────────────────────────
   const sectionFileInputRef                 = useRef<HTMLInputElement>(null!);
@@ -538,6 +604,84 @@ export default function DashboardPage() {
     e.target.value = "";
   };
 
+  // ── Import fichier direct au niveau d'une sous-rubrique (sans entrée) ──
+  const handleSectionDocBrowse = (key: string) => {
+    setSectionDocTarget(key);
+    sectionDocInputRef.current?.click();
+  };
+
+  const handleSectionDocChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !sectionDocTarget) return;
+
+    const newFiles: AttachedFile[] = Array.from(files).map(f => ({
+      nom: f.name,
+      type: f.name.split(".").pop()?.toUpperCase() || "Fichier",
+      taille: f.size / (1024 * 1024) >= 1 ? `${(f.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(f.size / 1024))} KB`,
+      url: URL.createObjectURL(f),
+    }));
+
+    setSectionDocsMap(prev => ({
+      ...prev,
+      [sectionDocTarget]: [...(prev[sectionDocTarget] || []), ...newFiles],
+    }));
+
+    setSectionDocTarget("");
+    e.target.value = "";
+  };
+
+  const handleDownloadSectionDoc = (f: AttachedFile) => {
+    const a = document.createElement("a");
+    a.href = f.url; a.download = f.nom;
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+
+  // ── Opérations : ouvrir modal (création ou édition) ─────────────────
+  const handleOpenOpModal = (op?: Operation) => {
+    if (op) {
+      setOpEditingId(op.id);
+      setOpLibelle(op.libelle);
+      setOpCategorie(op.categorie);
+      setOpMethode(op.methode);
+      setOpMontant(String(op.montant));
+      setOpStatut(op.statut);
+      setOpDate(op.date);
+    } else {
+      setOpEditingId(null);
+      setOpLibelle("");
+      setOpCategorie(OP_CATEGORIES[0]);
+      setOpMethode(OP_METHODES[0]);
+      setOpMontant("");
+      setOpStatut(OP_STATUTS[0]);
+      const months = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+      const now = new Date();
+      setOpDate(`${now.getDate()} ${months[now.getMonth()]}`);
+    }
+    setOpModalOpen(true);
+  };
+
+  const handleSaveOp = () => {
+    const montantNum = parseInt(opMontant.replace(/[^\-0-9]/g, ""), 10);
+    if (!opLibelle.trim() || isNaN(montantNum)) return;
+
+    if (opEditingId) {
+      setOperations(prev => prev.map(o => o.id === opEditingId
+        ? { ...o, libelle: opLibelle.trim(), categorie: opCategorie, methode: opMethode, montant: montantNum, statut: opStatut, date: opDate }
+        : o));
+    } else {
+      const newId = `OP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 900) + 100)}`;
+      setOperations(prev => [
+        { id: newId, libelle: opLibelle.trim(), categorie: opCategorie, methode: opMethode, montant: montantNum, statut: opStatut, date: opDate },
+        ...prev,
+      ]);
+    }
+    setOpModalOpen(false);
+  };
+
+  const handleDeleteOp = (id: string) => {
+    setOperations(prev => prev.filter(o => o.id !== id));
+  };
+
   // ── Paramètres ───────────────────────────────────────────────────────
   const handleSaveProfil   = () => { setSettingsModal(null); alert("Profil mis à jour avec succès."); };
   const handleSavePassword = () => {
@@ -632,8 +776,10 @@ export default function DashboardPage() {
 
       {/* Input global documents */}
       <input ref={fileInputRef} type="file" multiple onChange={handleFileChange} style={{ display: "none" }} />
-      {/* Input fichiers de sous-rubrique */}
+      {/* Input fichiers de sous-rubrique (par entrée) */}
       <input ref={sectionFileInputRef} type="file" multiple onChange={handleSectionFileChange} style={{ display: "none" }} />
+      {/* Input fichiers de sous-rubrique (direct, sans entrée) */}
+      <input ref={sectionDocInputRef} type="file" multiple onChange={handleSectionDocChange} style={{ display: "none" }} />
 
       <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', system-ui, sans-serif", background: COLORS.cream, overflow: "hidden" }}>
         {/* SIDEBAR DESKTOP */}
@@ -683,16 +829,19 @@ export default function DashboardPage() {
               setMessageInput={setMessageInput} onSendMessage={handleSendMessage}
               docs={docs} onBrowseClick={handleBrowseClick} onDownload={handleDownload}
               onOpenSettings={(modal) => setSettingsModal(modal)}
-              sectionFileInputRef={sectionFileInputRef}
               onSectionFileBrowse={handleSectionFileBrowse}
-              sectionFileKey={`${activeNav}::${activeSub}`}
-              setSectionFileKey={() => {}}
+              sectionDocsMap={sectionDocsMap}
+              onSectionDocBrowse={handleSectionDocBrowse}
+              onDownloadSectionDoc={handleDownloadSectionDoc}
+              operations={operations}
+              onOpenOpModal={handleOpenOpModal}
+              onDeleteOp={handleDeleteOp}
             />
           </div>
         </div>
       </div>
 
-      {/* MODAL AJOUTER */}
+      {/* MODAL AJOUTER (entrée de sous-rubrique) */}
       {modalOpen && (
         <div onClick={() => setModalOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 380 }}>
@@ -708,6 +857,65 @@ export default function DashboardPage() {
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button onClick={() => { setModalOpen(false); setModalValue(""); }} style={{ background: COLORS.cream, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
               <button onClick={handleSaveModal} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Enregistrer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL OPÉRATION (ajout / édition) */}
+      {opModalOpen && (
+        <div onClick={() => setOpModalOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.white, borderRadius: 14, padding: 24, width: "100%", maxWidth: 420 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>
+              {opEditingId ? "✏️ Modifier l'opération" : "+ Nouvelle opération"}
+            </h3>
+
+            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Libellé</label>
+            <input autoFocus value={opLibelle} onChange={(e) => setOpLibelle(e.target.value)}
+              placeholder="Ex : Virement entrant — Client X"
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", marginBottom: 14 }} />
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Catégorie</label>
+                <select value={opCategorie} onChange={(e) => setOpCategorie(e.target.value)}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", background: COLORS.white }}>
+                  {OP_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Méthode</label>
+                <select value={opMethode} onChange={(e) => setOpMethode(e.target.value)}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", background: COLORS.white }}>
+                  {OP_METHODES.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Montant (FCFA)</label>
+                <input value={opMontant} onChange={(e) => setOpMontant(e.target.value)}
+                  placeholder="Ex : 1500000 ou -250000"
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Date</label>
+                <input value={opDate} onChange={(e) => setOpDate(e.target.value)}
+                  placeholder="Ex : 28 Jun"
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none" }} />
+              </div>
+            </div>
+
+            <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.slate, marginBottom: 4, display: "block" }}>Statut</label>
+            <select value={opStatut} onChange={(e) => setOpStatut(e.target.value)}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #E2E8F0", fontSize: 13, outline: "none", background: COLORS.white, marginBottom: 18 }}>
+              {OP_STATUTS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => setOpModalOpen(false)} style={{ background: COLORS.cream, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+              <button onClick={handleSaveOp} style={{ background: COLORS.gold, color: COLORS.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Enregistrer</button>
             </div>
           </div>
         </div>
