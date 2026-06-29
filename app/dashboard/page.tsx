@@ -127,7 +127,7 @@ function PageContent({
   setMessageInput: (v: string) => void; onSendMessage: () => void;
   docs: DocItem[]; onBrowseClick: () => void; onDownload: (doc: DocItem) => void;
   onOpenSettings: (modal: "profil" | "password" | "securite") => void;
-  sectionFileInputRef: React.RefObject<HTMLInputElement>;
+  sectionFileInputRef: React.MutableRefObject<HTMLInputElement>;
   onSectionFileBrowse: (key: string, entryIdx: number) => void;
   sectionFileKey: string; setSectionFileKey: (k: string) => void;
 }) {
@@ -433,10 +433,10 @@ export default function DashboardPage() {
   const [messageInput, setMessageInput]     = useState("");
 
   const [docs, setDocs]                     = useState<DocItem[]>(INITIAL_DOCS);
-  const fileInputRef                        = useRef<HTMLInputElement>(null);
+  const fileInputRef                        = useRef<HTMLInputElement>(null!);
 
   // ── Import fichiers dans une sous-rubrique ──────────────────────────
-  const sectionFileInputRef                 = useRef<HTMLInputElement>(null);
+  const sectionFileInputRef                 = useRef<HTMLInputElement>(null!);
   // stocke "key::entryIdx" pour savoir quelle entrée reçoit le fichier
   const [sectionFileTarget, setSectionFileTarget] = useState<string>("");
 
