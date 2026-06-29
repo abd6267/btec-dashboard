@@ -395,7 +395,7 @@ export default function VitrinePage() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 32 }}>
             {[
-              { icon: "📧", label: "Email", val: "contact@btecbenin.com" },
+              { icon: "📧", label: "Email", val: "services@btecbenin.com" },
               { icon: "📞", label: "WhatsApp", val: "+229 01 66 37 54 68" },
               { icon: "📍", label: "Adresse", val: "Mènontin, Cotonou" },
             ].map((c, i) => (
@@ -476,7 +476,7 @@ export default function VitrinePage() {
           <div>
             <div style={{ color: C.snow, fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Contact</div>
             <div style={{ color: C.mist, fontSize: 12, marginBottom: 8 }}>📧 contact@btecbenin.com</div>
-            <div style={{ color: C.mist, fontSize: 12, marginBottom: 8 }}>📞 +229 01 48 55 26 07</div>
+            <div style={{ color: C.mist, fontSize: 12, marginBottom: 8 }}>📞 +229 01 66 37 54 68</div>
             <div style={{ color: C.mist, fontSize: 12 }}>📍 Mènontin, Cotonou</div>
           </div>
         </div>
