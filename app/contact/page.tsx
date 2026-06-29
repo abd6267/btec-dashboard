@@ -43,9 +43,9 @@ export default function ContactPage() {
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: COLORS.navy, marginBottom: 20 }}>Nos coordonnées</h2>
             {[
-              { icon: "📧", titre: "Email", val: "contact@btecbenin.com", lien: "mailto:contact@btecbenin.com" },
-              { icon: "📞", titre: "WhatsApp", val: "+229 01 48 55 26 07", lien: "https://wa.me/22901485526" },
-              { icon: "📞", titre: "Téléphone", val: "+229 01 62 84 95 41", lien: "tel:+22901628495" },
+              { icon: "📧", titre: "Email", val: "contact@btecbenin.com", lien: "mailto:services@btecbenin.com" },
+              { icon: "📞", titre: "WhatsApp", val: "+229 01 66 37 54 68", lien: "https://wa.me/22901485526" },
+              { icon: "📞", titre: "Téléphone", val: "+229 01 66 37 54 68", lien: "tel:+2290166375468" },
               { icon: "📍", titre: "Adresse", val: "Mènontin, Cotonou, Bénin", lien: null },
             ].map((c, i) => (
               <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "16px 20px", marginBottom: 12, display: "flex", alignItems: "center", gap: 14, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
@@ -109,7 +109,7 @@ export default function ContactPage() {
                   <button onClick={handleSubmit} style={{ background: COLORS.navy, color: COLORS.white, border: "none", borderRadius: 10, padding: "13px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                     📤 Envoyer le message
                   </button>
-                  <a href="https://wa.me/22901485526" style={{ display: "block", textAlign: "center", background: "#25D366", color: COLORS.white, borderRadius: 10, padding: "13px", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                  <a href="https://wa.me/2290166375468" style={{ display: "block", textAlign: "center", background: "#25D366", color: COLORS.white, borderRadius: 10, padding: "13px", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
                     💬 Contacter via WhatsApp
                   </a>
                 </div>
@@ -120,7 +120,7 @@ export default function ContactPage() {
       </section>
 
       <footer style={{ background: COLORS.navy, padding: "24px", textAlign: "center" }}>
-        <div style={{ color: COLORS.slateLight, fontSize: 12 }}>© 2025 BTEC Bénin · Mènontin, Cotonou</div>
+        <div style={{ color: COLORS.slateLight, fontSize: 12 }}>© 2026 BTEC Bénin · Mènontin, Cotonou</div>
       </footer>
     </div>
   );
