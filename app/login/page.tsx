@@ -60,11 +60,22 @@ export default function LoginPage() {
           <div style={{ background: "#FEE2E2", color: "#DC2626", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 16, fontWeight: 500 }}>⚠ {error}</div>
         )}
 
-        <button onClick={handleLogin} style={{ width: "100%", padding: "13px", background: "#0B1F3A", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 20 }}>
+        <button onClick={handleLogin} style={{ width: "100%", padding: "13px", background: "#0B1F3A", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 16 }}>
           Se connecter
         </button>
-        
-        <div style={{ textAlign: "center", marginTop: 20, fontSize: 12, color: "#94A3B8" }}>🔒 Connexion sécurisée SSL</div>
+
+        {/* Lien Inscription */}
+        <div style={{ textAlign: "center", fontSize: 13, color: "#64748B", marginBottom: 16 }}>
+          Pas encore de compte ?{" "}
+          <span
+            onClick={() => router.push("/inscription")}
+            style={{ color: "#2563EB", fontWeight: 700, cursor: "pointer" }}
+          >
+            S'inscrire
+          </span>
+        </div>
+
+        <div style={{ textAlign: "center", fontSize: 12, color: "#94A3B8" }}>🔒 Connexion sécurisée SSL</div>
       </div>
     </div>
   );
