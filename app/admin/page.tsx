@@ -16,6 +16,7 @@ const NAV_ADMIN = [
   { id: "supervision", icon: "⊞", label: "Supervision", sub: [] },
   { id: "entreprises", icon: "🏢", label: "Entreprises", sub: ["Créer", "Modifier", "Suspendre"] },
   { id: "comptables", icon: "👨‍💼", label: "Comptables", sub: ["Ajouter", "Modifier", "Supprimer", "Assigner", "Auxiliaires"] },
+  { id: "espace-comptable", icon: "🔗", label: "Comptable & Auxiliaires", sub: [] },
   { id: "utilisateurs", icon: "👥", label: "Utilisateurs", sub: ["Rôles", "Permissions"] },
   { id: "facturation", icon: "💰", label: "Facturation SaaS", sub: ["Abonnements", "Paiements", "Renouvellements"] },
   { id: "rapports", icon: "📊", label: "Rapports", sub: ["Global", "Par entreprise"] },
@@ -73,6 +74,15 @@ const INIT_PERMISSIONS = [
   { action: "Modifier les paramètres", comptable: false, secretaire: false },
   { action: "Saisir les recettes", comptable: true, secretaire: true },
   { action: "Valider les opérations", comptable: true, secretaire: false },
+];
+
+// ── Espace Comptable relié à l'admin ──────────────────────────────────────
+const COMPTE_COMPTABLE_INIT = { nom: "Comptable Principal", email: "comptable@btec.bj", statut: "actif" };
+
+const AUXILIAIRES_DEMANDES_INIT = [
+  { id: 1, nom: "Bello", prenom: "Rafiatou", email: "rafiatou.bello@btec.bj", telephone: "+229 97 55 66 77", entreprises: ["SARL AKPLA Commerce"], demande: "ajout", statut: "confirme" },
+  { id: 2, nom: "Todjinou", prenom: "Emile", email: "emile.todjinou@btec.bj", telephone: "+229 97 66 77 88", entreprises: ["BENIN TECH Services", "INDUSTRIE ZINSOU"], demande: "ajout", statut: "confirme" },
+  { id: 3, nom: "Houngbo", prenom: "Carole", email: "carole.houngbo@btec.bj", telephone: "+229 97 88 99 00", entreprises: ["GIE ALAFIA"], demande: "ajout", statut: "en_attente" },
 ];
 
 function Modal({ titre, onClose, children }: { titre: string; onClose: () => void; children: React.ReactNode }) {
@@ -389,6 +399,121 @@ function ComptablesPage() {
           </div>
         </Modal>
       )}
+    </div>
+  );
+}
+
+// ── NOUVEAU : Espace Comptable & Auxiliaires (lien Admin ↔ Comptable ↔ Auxiliaires) ──
+function EspaceComptablePage() {
+  const [compteComptable, setCompteComptable] = useState(COMPTE_COMPTABLE_INIT);
+  const [demandes, setDemandes] = useState(AUXILIAIRES_DEMANDES_INIT);
+  const [modal, setModal] = useState<string | null>(null);
+  const [selected, setSelected] = useState<typeof AUXILIAIRES_DEMANDES_INIT[0] | null>(null);
+  const [success, setSuccess] = useState("");
+  const showSuccess = (msg: string) => { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); };
+
+  const enAttente = demandes.filter(d => d.statut === "en_attente" || d.statut === "retrait_demande");
+
+  const confirmerDemande = (id: number) => {
+    setDemandes(demandes.map(d => {
+      if (d.id !== id) return d;
+      if (d.demande === "retrait") return { ...d, statut: "retire" };
+      return { ...d, statut: "confirme" };
+    }));
+    setModal(null);
+    showSuccess("Demande confirmée.");
+  };
+
+  const refuserDemande = (id: number) => {
+    setDemandes(demandes.map(d => d.id === id ? { ...d, statut: d.demande === "retrait" ? "confirme" : "refuse" } : d));
+    setModal(null);
+    showSuccess("Demande refusée.");
+  };
+
+  const toggleCompteComptable = () => {
+    setCompteComptable(prev => ({ ...prev, statut: prev.statut === "actif" ? "retire" : "actif" }));
+    showSuccess(compteComptable.statut === "actif" ? "Espace Comptable retiré de la plateforme." : "Espace Comptable réactivé.");
+  };
+
+  return (
+    <div>
+      {success && <div style={{ background: COLORS.greenLight, color: COLORS.green, padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontWeight: 600, fontSize: 13 }}>✅ {success}</div>}
+
+      <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, marginBottom: 16 }}>Espace Comptable & Auxiliaires</h2>
+
+      {/* Compte Comptable */}
+      <div style={{ background: COLORS.white, borderRadius: 14, padding: 18, marginBottom: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy, marginBottom: 12 }}>Compte Espace Comptable</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy }}>{compteComptable.nom}</div>
+            <div style={{ fontSize: 12, color: COLORS.slate }}>{compteComptable.email}</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 11, padding: "3px 9px", borderRadius: 20, background: compteComptable.statut === "actif" ? COLORS.greenLight : COLORS.redLight, color: compteComptable.statut === "actif" ? COLORS.green : COLORS.red, fontWeight: 700 }}>
+              {compteComptable.statut === "actif" ? "Actif sur la plateforme" : "Retiré"}
+            </span>
+            <button onClick={toggleCompteComptable} style={{ fontSize: 11, padding: "6px 12px", borderRadius: 6, border: "none", background: compteComptable.statut === "actif" ? COLORS.redLight : COLORS.greenLight, color: compteComptable.statut === "actif" ? COLORS.red : COLORS.green, cursor: "pointer", fontWeight: 700 }}>
+              {compteComptable.statut === "actif" ? "🗑 Retirer" : "✅ Réactiver"}
+            </button>
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: COLORS.slateLight, marginTop: 10, lineHeight: 1.6 }}>
+          L'administrateur peut ajouter ou retirer ce compte de la plateforme à tout moment.
+        </div>
+      </div>
+
+      {/* Demandes en attente */}
+      <div style={{ marginBottom: 16 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, marginBottom: 12 }}>
+          Demandes du Comptable en attente de confirmation {enAttente.length > 0 && (
+            <span style={{ background: COLORS.red, color: "white", borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18, fontSize: 10, fontWeight: 700, marginLeft: 6 }}>{enAttente.length}</span>
+          )}
+        </h3>
+        {enAttente.length === 0 && (
+          <div style={{ fontSize: 12, color: COLORS.slate, padding: "10px 0" }}>Aucune demande en attente.</div>
+        )}
+        {enAttente.map((d, i) => (
+          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 6px rgba(0,0,0,0.05)", borderLeft: `3px solid ${COLORS.orange}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, gap: 8 }}>
+              <div style={{ fontWeight: 700, color: COLORS.navy, fontSize: 14 }}>{d.prenom} {d.nom}</div>
+              <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, background: COLORS.orangeLight, color: COLORS.orange, fontWeight: 700 }}>
+                {d.statut === "retrait_demande" ? "Demande de retrait" : "Demande d'ajout"}
+              </span>
+            </div>
+            <div style={{ fontSize: 12, color: COLORS.slate, marginBottom: 4 }}>{d.email} · 📞 {d.telephone}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+              {d.entreprises.map(e => (
+                <span key={e} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 10, background: COLORS.cream, color: COLORS.navy, fontWeight: 600 }}>{e}</span>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => confirmerDemande(d.id)} style={{ fontSize: 11, padding: "6px 12px", borderRadius: 6, border: "none", background: COLORS.greenLight, color: COLORS.green, cursor: "pointer", fontWeight: 700 }}>✅ Confirmer</button>
+              <button onClick={() => refuserDemande(d.id)} style={{ fontSize: 11, padding: "6px 12px", borderRadius: 6, border: "none", background: COLORS.redLight, color: COLORS.red, cursor: "pointer", fontWeight: 700 }}>✖ Refuser</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Liste des auxiliaires */}
+      <div>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, marginBottom: 12 }}>Tous les comptables auxiliaires</h3>
+        {demandes.map((d, i) => (
+          <div key={i} style={{ background: COLORS.white, borderRadius: 12, padding: "12px 16px", marginBottom: 8, boxShadow: "0 2px 6px rgba(0,0,0,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{d.prenom} {d.nom}</div>
+              <div style={{ fontSize: 11, color: COLORS.slate }}>{d.email}</div>
+            </div>
+            <span style={{
+              fontSize: 11, padding: "3px 9px", borderRadius: 20, fontWeight: 700,
+              background: d.statut === "confirme" ? COLORS.greenLight : d.statut === "refuse" || d.statut === "retire" ? COLORS.redLight : COLORS.orangeLight,
+              color: d.statut === "confirme" ? COLORS.green : d.statut === "refuse" || d.statut === "retire" ? COLORS.red : COLORS.orange,
+            }}>
+              {d.statut === "confirme" ? "Confirmé, actif" : d.statut === "refuse" ? "Refusé" : d.statut === "retire" ? "Retiré" : "En attente"}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -759,6 +884,7 @@ export default function AdminPage() {
       case "supervision": return <SupervisionPage />;
       case "entreprises": return <EntreprisesPage />;
       case "comptables": return <ComptablesPage />;
+      case "espace-comptable": return <EspaceComptablePage />;
       case "utilisateurs": return <UtilisateursPage sub={activeSub} />;
       case "facturation": return <FacturationPage sub={activeSub} />;
       case "rapports": return <RapportsPage sub={activeSub} />;
