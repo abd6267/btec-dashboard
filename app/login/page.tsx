@@ -17,10 +17,19 @@ export default function LoginPage() {
   const [forgotSent, setForgotSent] = useState(false);
 
   const handleLogin = () => {
-    if (email === "admin@btec.bj" && password === "BTEC6267") {
+    const e = email.trim().toLowerCase();
+
+    if (e === "admin@btec.bj" && password === "BTEC6267") {
       router.push("/admin");
-    } else if (email === "client@btec.bj" && password === "client6267") {
+    } else if (e === "client@btec.bj" && password === "client6267") {
       router.push("/dashboard");
+    } else if (e === "comptable@btec.bj" && password === "Comptable6267") {
+      router.push("/comptable");
+    } else if (e === "assistant@btec.bj" && password === "assistant6267") {
+      // Compte de démonstration. Dans la vraie plateforme, chaque comptable
+      // auxiliaire a son propre email/mot de passe créé par le Comptable
+      // (voir /comptable → Auxiliaires → Ajouter), puis confirmé par l'Admin.
+      router.push("/auxiliaire");
     } else {
       setError("Email ou mot de passe incorrect.");
     }
